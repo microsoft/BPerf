@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C45E1F19-79E0-447D-86DB-3E8F1D2B1311}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>BPerfCoreCLRProfiler</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(CORECLR_PATH)\src\pal\prebuilt\inc;$(CORECLR_PATH)\src\inc;$(CORECLR_PATH)\bin\Product\$(BuildOS).$(BuildArch).$(BuildType)\inc;$(NETFXSDKDir)Include\um;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(CORECLR_PATH)\src\pal\prebuilt\inc;$(CORECLR_PATH)\src\inc;$(CORECLR_PATH)\bin\Product\$(BuildOS).$(BuildArch).$(BuildType)\inc;$(NETFXSDKDir)Include\um;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(CORECLR_PATH)\src\pal\prebuilt\inc;$(CORECLR_PATH)\src\inc;$(CORECLR_PATH)\bin\Product\$(BuildOS).$(BuildArch).$(BuildType)\inc;$(NETFXSDKDir)Include\um;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(CORECLR_PATH)\src\pal\prebuilt\inc;$(CORECLR_PATH)\src\inc;$(CORECLR_PATH)\bin\Product\$(BuildOS).$(BuildArch).$(BuildType)\inc;$(NETFXSDKDir)Include\um;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;BPERFCORECLRPROFILER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ModuleDefinitionFile>BPerfCoreCLRProfiler.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;BPERFCORECLRPROFILER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ModuleDefinitionFile>BPerfCoreCLRProfiler.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;BPERFCORECLRPROFILER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ModuleDefinitionFile>BPerfCoreCLRProfiler.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;BPERFCORECLRPROFILER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ModuleDefinitionFile>BPerfCoreCLRProfiler.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="AppDomainLoadEvent.h" />
+    <ClInclude Include="AppDomainUnloadEvent.h" />
+    <ClInclude Include="AssemblyLoadEvent.h" />
+    <ClInclude Include="AssemblyUnloadEvent.h" />
+    <ClInclude Include="BPerfProfiler.h" />
+    <ClInclude Include="CComPtr.h" />
+    <ClInclude Include="ClassFactory.h" />
+    <ClInclude Include="CQuickBytes.h" />
+    <ClInclude Include="EtwEvent.h" />
+    <ClInclude Include="EtwLogger.h" />
+    <ClInclude Include="GuidDef.h" />
+    <ClInclude Include="HeartBeatEvent.h" />
+    <ClInclude Include="ILRewriter.h" />
+    <ClInclude Include="JITCompilationFinishedEvent.h" />
+    <ClInclude Include="JITCompilationStartedEvent.h" />
+    <ClInclude Include="MethodEnterEvent.h" />
+    <ClInclude Include="MethodILToNativeMapEvent.h" />
+    <ClInclude Include="MethodUnloadEvent.h" />
+    <ClInclude Include="ModuleLoadEvent.h" />
+    <ClInclude Include="ModuleUnloadEvent.h" />
+    <ClInclude Include="PortableString.h" />
+    <ClInclude Include="profiler_pal.h" />
+    <ClInclude Include="EtwLogger.Generated.h" />
+    <ClInclude Include="RundownList.h" />
+    <ClInclude Include="RundownListNode.h" />
+    <ClInclude Include="RuntimeInformationEvent.h" />
+    <ClInclude Include="Serializer.h" />
+    <ClInclude Include="sha1.h" />
+    <ClInclude Include="ShutdownEvent.h" />
+    <ClInclude Include="sqlite3.h" />
+    <ClInclude Include="SQLiteEventLogger.h" />
+    <ClInclude Include="SQLiteSerializer.h" />
+    <ClInclude Include="StartupEvent.h" />
+    <ClInclude Include="ThreadSafeQueue.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AppDomainLoadEvent.cpp" />
+    <ClCompile Include="AppDomainUnloadEvent.cpp" />
+    <ClCompile Include="AssemblyLoadEvent.cpp" />
+    <ClCompile Include="AssemblyUnloadEvent.cpp" />
+    <ClCompile Include="BPerfProfiler.cpp" />
+    <ClCompile Include="BPerfProfiler.PrivateHelpers.cpp" />
+    <ClCompile Include="ClassFactory.cpp" />
+    <ClCompile Include="CQuickBytes.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="EtwEvent.cpp" />
+    <ClCompile Include="HeartBeatEvent.cpp" />
+    <ClCompile Include="ILRewriter.cpp" />
+    <ClCompile Include="JITCompilationFinishedEvent.cpp" />
+    <ClCompile Include="JITCompilationStartedEvent.cpp" />
+    <ClCompile Include="MethodEnterEvent.cpp" />
+    <ClCompile Include="MethodILToNativeMapEvent.cpp" />
+    <ClCompile Include="MethodUnloadEvent.cpp" />
+    <ClCompile Include="ModuleLoadEvent.cpp" />
+    <ClCompile Include="ModuleUnloadEvent.cpp" />
+    <ClCompile Include="PrettyPrintSig.cpp" />
+    <ClCompile Include="RuntimeInformationEvent.cpp" />
+    <ClCompile Include="sha1.cpp" />
+    <ClCompile Include="ShutdownEvent.cpp" />
+    <ClCompile Include="sqlite3.c" />
+    <ClCompile Include="SQLiteEventLogger.cpp" />
+    <ClCompile Include="SQLiteSerializer.cpp" />
+    <ClCompile Include="StartupEvent.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
