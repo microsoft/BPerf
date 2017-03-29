@@ -19,7 +19,7 @@
 #include "MethodILToNativeMapEvent.h"
 #include "JITCompilationFinishedEvent.h"
 
-class BPerfProfiler : public ICorProfilerCallback7
+class BPerfProfiler : public ICorProfilerCallback8
 {
   public:
     BPerfProfiler();
@@ -113,10 +113,13 @@ class BPerfProfiler : public ICorProfilerCallback7
     HRESULT STDMETHODCALLTYPE ConditionalWeakTableElementReferences(ULONG cRootRefs, ObjectID keyRefIds[], ObjectID valueRefIds[], GCHandleID rootIds[]) override;
     HRESULT STDMETHODCALLTYPE GetAssemblyReferences(const WCHAR *wszAssemblyPath, ICorProfilerAssemblyReferenceProvider *pAsmRefProvider) override;
     HRESULT STDMETHODCALLTYPE ModuleInMemorySymbolsUpdated(ModuleID moduleId) override;
+    HRESULT STDMETHODCALLTYPE DynamicMethodJITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock, LPCBYTE ilHeader, ULONG cbILHeader) override;
+    HRESULT STDMETHODCALLTYPE DynamicMethodJITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock) override;
 
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override
     {
-        if (riid == __uuidof(ICorProfilerCallback7) ||
+        if (riid == __uuidof(ICorProfilerCallback8) ||
+            riid == __uuidof(ICorProfilerCallback7) ||
             riid == __uuidof(ICorProfilerCallback6) ||
             riid == __uuidof(ICorProfilerCallback5) ||
             riid == __uuidof(ICorProfilerCallback4) ||
@@ -158,7 +161,7 @@ class BPerfProfiler : public ICorProfilerCallback7
   private:
     USHORT clrInstanceId;
     std::atomic<int> refCount;
-    ICorProfilerInfo7 *corProfilerInfo;
+    ICorProfilerInfo8 *corProfilerInfo;
     sqlite3 *db;
     std::thread eventLoggerThread;
 	bool shouldMaintainShadowStack;
@@ -193,6 +196,7 @@ class BPerfProfiler : public ICorProfilerCallback7
     HRESULT AssemblyLoadUnloadData(AssemblyID assemblId, bool load);
     HRESULT ModuleLoadUnloadData(ModuleID moduleId, bool load);
     HRESULT MethodJitStartFinishData(FunctionID functionId, bool finished, bool unload);
+    HRESULT DynamicMethodJitStartFinishData(FunctionID functionId, ULONG cbILHeader, bool finished);
 };
 
 static bool IsEnvironmentVariableEnabled(const char *envVarName)

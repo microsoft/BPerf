@@ -741,3 +741,13 @@ HRESULT STDMETHODCALLTYPE BPerfProfiler::ModuleInMemorySymbolsUpdated(ModuleID m
 {
     return S_OK;
 }
+
+HRESULT STDMETHODCALLTYPE BPerfProfiler::DynamicMethodJITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock, LPCBYTE ilHeader, ULONG cbILHeader)
+{
+    return this->DynamicMethodJitStartFinishData(functionId, cbILHeader, /* finished */ false);
+}
+
+HRESULT STDMETHODCALLTYPE BPerfProfiler::DynamicMethodJITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock)
+{
+    return this->DynamicMethodJitStartFinishData(functionId, 0 /* not needed */, /* finished */ true);
+}

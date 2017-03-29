@@ -390,3 +390,53 @@ HRESULT BPerfProfiler::MethodJitStartFinishData(FunctionID functionId, bool fini
 
     return S_OK;
 }
+
+HRESULT BPerfProfiler::DynamicMethodJitStartFinishData(FunctionID functionId, ULONG cbILHeader, bool finished)
+{
+    HRESULT hr;
+    ModuleID moduleId;
+    ULONG methodNameLength = 0;
+    ULONG sigLength = 0;
+    PCCOR_SIGNATURE sig;
+
+    IfFailRet(this->corProfilerInfo->GetDynamicFunctionInfo(functionId, &moduleId, &sig, &sigLength, 0, &methodNameLength, nullptr));
+    portable_wide_string methodName(methodNameLength, ZEROSTRING);
+    IfFailRet(this->corProfilerInfo->GetDynamicFunctionInfo(functionId, nullptr, &sig, &sigLength, methodNameLength, nullptr, addr(methodName)));
+
+    CComPtr<IMetaDataImport> metaDataImport;
+    IfFailRet(this->corProfilerInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown **>(&metaDataImport)));
+
+    CQuickBytes quickBytes;
+    portable_wide_string signatureString(PrettyPrintSigWorker(sig, sigLength, EMPTYSTRING, &quickBytes, metaDataImport));
+    signatureString.resize(signatureString.length() + 1); // we want the null terminator when we serialize
+
+    if (!finished)
+    {
+        this->eventQueue->push(LogEvent<JITCompilationStartedEvent>(functionId, moduleId, 0, cbILHeader, W("dynamicClass"), methodName, signatureString, this->clrInstanceId));
+    }
+    else
+    {
+        ULONG32 codeInfosCount;
+
+        IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, 0, &codeInfosCount, nullptr));
+        std::vector<COR_PRF_CODE_INFO> codeInfos(codeInfosCount);
+        IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, codeInfosCount, &codeInfosCount, codeInfos.data()));
+
+        int64_t methodStartAddress = 0;
+        int32_t methodSize = 0;
+
+        if (codeInfosCount > 0)
+        {
+            methodStartAddress = codeInfos[0].startAddress;
+            methodSize = static_cast<int32_t>(codeInfos[0].size);
+        }
+
+        auto temp = this->methodRundown.Add(LogEvent2<JITCompilationFinishedEvent>(this->eventQueue, functionId, moduleId, methodStartAddress, methodSize, 0, 1, W("dynamicClass"), methodName, signatureString, this->clrInstanceId, 0));
+        {
+            std::lock_guard<std::mutex> lock(this->methodMutex);
+            this->methodInfoMap[functionId] = temp;
+        }
+    }
+
+    return S_OK;
+}
