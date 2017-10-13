@@ -1,0 +1,54 @@
+﻿@{
+    this.Layout = string.Empty;
+}
+
+@model ProcessListViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BPerf</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-table.min.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">BPerf</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/ui/eventlist?filename=@this.Model.Filename">@this.Model.Filename</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<table class="table">
+    <thead class="thead-inverse">
+    <tr>
+        <th>Process Name</th>
+        <th>Samples Count</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var process in this.Model.ProcessList)
+    {
+        <tr>
+            <td><a href="/ui/stackviewer/summary?filename=@this.Model.Filename&stacktype=@this.Model.StackType&pid=@process.Id">@process.Name (@process.Id)</a></td>
+            <td>@process.SamplesCount</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/bootstrap-table.min.js"></script>
+</body>
+</html>

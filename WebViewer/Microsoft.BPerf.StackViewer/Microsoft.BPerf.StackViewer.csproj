@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
+    <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
+    <PackageReference Include="Microsoft.BPerf.Dia2Lib" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.BPerf.StackInformation.Abstractions\Microsoft.BPerf.StackInformation.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.BPerf.StackInformation.Etw\Microsoft.BPerf.StackInformation.Etw.csproj" />
+    <ProjectReference Include="..\Microsoft.BPerf.SymbolicInformation.Abstractions\Microsoft.BPerf.SymbolicInformation.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.BPerf.SymbolicInformation.ProgramDatabase\Microsoft.BPerf.SymbolicInformation.ProgramDatabase.csproj" />
+    <ProjectReference Include="..\Microsoft.Diagnostics.Tracing.Stacks\Microsoft.Diagnostics.Tracing.Stacks.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\SourceLink.targets" />
+
+</Project>

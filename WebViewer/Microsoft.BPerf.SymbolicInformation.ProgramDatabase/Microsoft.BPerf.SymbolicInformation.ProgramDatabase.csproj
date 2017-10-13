@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DiaSymReader" Version="1.1.0" />
+    <PackageReference Include="Microsoft.DiaSymReader.Native" Version="1.5.0" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.0.0" />
+    <PackageReference Include="System.Reflection.Metadata" Version="1.5.0" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.4.0" />
+    <PackageReference Include="Microsoft.BPerf.Dia2Lib" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.BPerf.Internal.CabExtraction\Microsoft.BPerf.Internal.CabExtraction.csproj" />
+    <ProjectReference Include="..\Microsoft.BPerf.SymbolicInformation.Abstractions\Microsoft.BPerf.SymbolicInformation.Abstractions.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\SourceLink.targets" />
+
+</Project>

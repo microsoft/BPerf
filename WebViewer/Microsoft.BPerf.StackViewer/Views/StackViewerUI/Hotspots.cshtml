@@ -1,0 +1,40 @@
+﻿@{
+    this.ViewBag.Title = "Summary View";
+    this.Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@model StackViewerViewModel
+
+<h4>Hotspots View</h4>
+
+<table class="table table-bordered table-hover" id="hotspots">
+    <thead class="thead-inverse">
+    <tr>
+        <td><a href="/Content/documentation.html#Name">Name</a></td>
+        <td><a href="/Content/documentation.html#ExcMetricP">Exclusive Metric %</a></td>
+        <td><a href="/Content/documentation.html#ExcMetricC">Exclusive Count</a></td>
+        <td><a href="/Content/documentation.html#IncMetricP">Inclusive Metric %</a></td>
+        <td><a href="/Content/documentation.html#IncMetricC">Inclusive Count</a></td>
+        <td><a href="/Content/documentation.html#FoldCount">Fold Count</a></td>
+        <td><a href="/Content/documentation.html#Histogram">When</a></td>
+        <td><a href="/Content/documentation.html#First">First</a></td>
+        <td><a href="/Content/documentation.html#Last">Last</a></td>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var node in this.Model.TreeNodes)
+    {
+        <tr data-tt-id="@this.Html.Encode(node.ContextId)" data-tt-parent-id="@this.Html.Encode(node.ParentContextId)" data-tt-branch="@node.HasChildren.ToString().ToLower()">
+            <td class="node">@this.Html.CustomRouteLink(node.Name, "Callers", new { name = node.Id })</td>
+            <td>@node.ExclusiveMetricPercent.ToString("n2")%</td>
+            <td>@node.ExclusiveCount</td>
+            <td>@node.InclusiveMetricPercent.ToString("n2")%</td>
+            <td>@node.InclusiveCount</td>
+            <td>@node.ExclusiveFoldedMetric</td>
+            <td>@node.InclusiveMetricByTimeString</td>
+            <td>@node.FirstTimeRelativeMSec.ToString("n3")</td>
+            <td>@node.LastTimeRelativeMSec.ToString("n3")</td>
+        </tr>
+    }
+    </tbody>
+</table>
