@@ -16,15 +16,11 @@ namespace Microsoft.BPerf.StackViewer
             return Newtonsoft.Json.JsonConvert.SerializeObject(obj);
         }
 
-        public static HtmlString CustomRouteLink(this IHtmlHelper htmlHelper, string linkText, string routeName, object routeValues)
+        public static HtmlString CustomRouteLink(this IHtmlHelper htmlHelper, string linkText, string name)
         {
-            var request = htmlHelper.ViewContext.HttpContext.Request;
-            UrlHelper urlHelper = new UrlHelper(htmlHelper.ViewContext);
-            UriBuilder uriBuilder = new UriBuilder(urlHelper.RouteUrl(routeName, routeValues, request.Scheme));
+            var str = "/ui/stackviewer/callertree?name=" + name;
 
-            var str = uriBuilder.ToString();
-
-            foreach (var p in request.Query)
+            foreach (var p in htmlHelper.ViewContext.HttpContext.Request.Query)
             {
                 if (string.Equals(p.Key, "path", StringComparison.OrdinalIgnoreCase))
                 {
@@ -37,15 +33,11 @@ namespace Microsoft.BPerf.StackViewer
             return new HtmlString("<a href=\"" + str + "\">" + linkText + "</a>");
         }
 
-        public static HtmlString RouteLinkTargetTab(this IHtmlHelper htmlHelper, string linkText, string routeName, object routeValues)
+        public static HtmlString RouteLinkTargetTab(this IHtmlHelper htmlHelper, string linkText, string name)
         {
-            var request = htmlHelper.ViewContext.HttpContext.Request;
-            UrlHelper urlHelper = new UrlHelper(htmlHelper.ViewContext);
-            UriBuilder uriBuilder = new UriBuilder(urlHelper.RouteUrl(routeName, routeValues, request.Scheme));
+            var str = "/ui/stackviewer/source/callertree?name=" + ((name.IndexOf('/') == -1) ? name : name.Substring(0, name.IndexOf('/'))) + "&path=" + ((name.IndexOf('/') != -1) ? name.Substring(name.IndexOf('/') + 1) : string.Empty);
 
-            var str = uriBuilder.ToString();
-
-            foreach (var p in request.Query)
+            foreach (var p in htmlHelper.ViewContext.HttpContext.Request.Query)
             {
                 if (string.Equals(p.Key, "path", StringComparison.OrdinalIgnoreCase))
                 {

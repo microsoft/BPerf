@@ -1,7 +1,7 @@
 ﻿@model TreeNode
 <tr data-tt-id="@this.Html.Encode(this.Model.ContextId)" data-tt-parent-id="@this.Html.Encode(this.Model.ParentContextId)" data-tt-branch="@this.Model.HasChildren.ToString().ToLower()">
-    <td class="node">@this.Html.CustomRouteLink(this.Model.Name, "Callers", new { name = this.Model.Id })</td>
-    <td class="src">@this.Html.RouteLinkTargetTab("Source", "SourceViewer", new { name = (this.Model.ContextId.IndexOf('/') == -1) ? this.Model.ContextId : this.Model.ContextId.Substring(0, this.Model.ContextId.IndexOf('/')), path = (this.Model.ContextId.IndexOf('/') != -1) ? this.Model.ContextId.Substring(this.Model.ContextId.IndexOf('/') + 1) : string.Empty })</td>
+    <td class="node">@this.Html.CustomRouteLink(this.Model.Name, this.Model.Id)</td>
+    <td class="src">@this.Html.RouteLinkTargetTab("Source", this.Model.ContextId)</td>
     <td>@this.Model.InclusiveMetricPercent.ToString("n1")%</td>
     <td>@this.Model.InclusiveCount</td>
     <td>@this.Model.ExclusiveMetricPercent.ToString("n1")%</td>

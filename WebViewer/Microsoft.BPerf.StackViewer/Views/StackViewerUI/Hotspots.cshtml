@@ -25,7 +25,7 @@
     @foreach (var node in this.Model.TreeNodes)
     {
         <tr data-tt-id="@this.Html.Encode(node.ContextId)" data-tt-parent-id="@this.Html.Encode(node.ParentContextId)" data-tt-branch="@node.HasChildren.ToString().ToLower()">
-            <td class="node">@this.Html.CustomRouteLink(node.Name, "Callers", new { name = node.Id })</td>
+            <td class="node">@this.Html.CustomRouteLink(node.Name, node.Id)</td>
             <td>@node.ExclusiveMetricPercent.ToString("n2")%</td>
             <td>@node.ExclusiveCount</td>
             <td>@node.InclusiveMetricPercent.ToString("n2")%</td>

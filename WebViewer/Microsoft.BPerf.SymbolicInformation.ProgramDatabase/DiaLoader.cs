@@ -30,7 +30,8 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
         {
             if (!loadedNativeDll)
             {
-                LoadLibrary(IntPtr.Size == 8 ? @"amd64\msdia140.dll" : @"x86\msdia140.dll");
+                // TODO: Remove System.IO.*
+                LoadLibrary(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(typeof(DiaLoader).Assembly.Location), IntPtr.Size == 8 ? @"amd64\msdia140.dll" : @"x86\msdia140.dll"));
                 loadedNativeDll = true;
             }
 
