@@ -3,6 +3,7 @@
 
 namespace Microsoft.BPerf.StackViewer
 {
+    using System;
     using System.IO;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -12,6 +13,7 @@ namespace Microsoft.BPerf.StackViewer
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Options;
 
     public sealed class Startup
     {
@@ -49,6 +51,11 @@ namespace Microsoft.BPerf.StackViewer
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            // TODO: Make this crossplat
+            var etlDir = Environment.ExpandEnvironmentVariables(app.ApplicationServices.GetService<IOptions<StackViewerSettings>>().Value.TemporaryDataFileDownloadLocation);
+            Directory.CreateDirectory(etlDir);
+            Directory.SetCurrentDirectory(etlDir);
+
             loggerFactory.AddConsole();
             app.UseStaticFiles();
             app.UseMvc();
