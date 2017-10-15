@@ -46,6 +46,8 @@ namespace Microsoft.BPerf.StackInformation.Etw
 
         private static readonly Guid ClrProviderGuid = new Guid("{e13c0d23-ccbc-4e12-931b-d9cc2eee27e4}");
 
+        private static readonly Guid TplProviderGuid = new Guid("{2e5dba47-a3d2-4d16-8ee0-6671ffdcd7b5}");
+
         private static readonly Guid ClrRundownProviderGuid = new Guid("{a669021c-c450-4609-a035-5af59af4df18}");
 
         private readonly Dictionary<Frame, int> pidEipToFrameIndexTable;
@@ -373,6 +375,19 @@ namespace Microsoft.BPerf.StackInformation.Etw
                         return "Event(Microsoft-Windows-DotNETRuntime/ExceptionCatch/Start)";
                     case 252:
                         return "Event(Microsoft-Windows-DotNETRuntime/ExceptionFinally/Start)";
+                }
+            }
+
+            if (providerId == TplProviderGuid)
+            {
+                switch (eventId)
+                {
+                    case 7:
+                        return "Event(System.Threading.Tasks.TplEventSource/TaskSchdeduled/Send)";
+                    case 10:
+                        return "Event(System.Threading.Tasks.TplEventSource/TaskWait/Send)";
+                    case 12:
+                        return "Event(System.Threading.Tasks.TplEventSource/TaskContinuationScheduled/Send)";
                 }
             }
 
