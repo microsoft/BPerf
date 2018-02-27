@@ -1,10 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <SourceLink Condition = " '$(TF_BUILD)' == 'True' ">$(IntermediateOutputPath)source_link.json</SourceLink>
+    <SourceLink>$(BaseIntermediateOutputPath)source_link.json</SourceLink>
   </PropertyGroup>
 
-  <Target Name="GenerateSourceLink" BeforeTargets="CoreCompile" Condition = " '$(TF_BUILD)' == 'True' ">
+  <Target Name="GenerateSourceLink" BeforeTargets="CoreCompile" >
     <PropertyGroup>
       <SrcRootDirectory>$(MSBuildThisFileDirectory.TrimEnd("\"))</SrcRootDirectory>
       <SourceLinkRoot>$(SrcRootDirectory.Replace("\", "\\"))</SourceLinkRoot>
@@ -14,7 +14,7 @@
       <Output TaskParameter="ConsoleOutput" PropertyName="LatestCommit" />
     </Exec>
 
-    <WriteLinesToFile File="$(IntermediateOutputPath)source_link.json" Overwrite="true" Lines='{"documents": { "$(SourceLinkRoot)\\*" : "https://raw.githubusercontent.com/Microsoft/BPerf/$(LatestCommit)/*" }}' />
+    <WriteLinesToFile File="$(BaseIntermediateOutputPath)source_link.json" Overwrite="true" Lines='{"documents": { "$(SourceLinkRoot)\\*" : "https://raw.githubusercontent.com/Microsoft/BPerf/$(LatestCommit)/*" }}' />
   </Target>
 
 </Project>
