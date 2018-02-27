@@ -5,7 +5,7 @@ namespace Microsoft.BPerf.StackViewer
 {
     using System;
     using System.Diagnostics.Tracing;
-    using Microsoft.BPerf.SymbolicInformation.Abstractions;
+    using Microsoft.BPerf.SymbolServer.Interfaces;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Options;
 

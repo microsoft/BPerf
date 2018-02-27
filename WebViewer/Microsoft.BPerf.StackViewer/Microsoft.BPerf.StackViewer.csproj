@@ -18,10 +18,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.BPerf.StackInformation.Abstractions\Microsoft.BPerf.StackInformation.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.BPerf.ModuleInformation.Abstractions\Microsoft.BPerf.ModuleInformation.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.BPerf.StackAggregation\Microsoft.BPerf.StackAggregation.csproj" />
     <ProjectReference Include="..\Microsoft.BPerf.StackInformation.Etw\Microsoft.BPerf.StackInformation.Etw.csproj" />
-    <ProjectReference Include="..\Microsoft.BPerf.SymbolicInformation.Abstractions\Microsoft.BPerf.SymbolicInformation.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.BPerf.SymbolicInformation.Interfaces\Microsoft.BPerf.SymbolicInformation.Interfaces.csproj" />
     <ProjectReference Include="..\Microsoft.BPerf.SymbolicInformation.ProgramDatabase\Microsoft.BPerf.SymbolicInformation.ProgramDatabase.csproj" />
+    <ProjectReference Include="..\Microsoft.BPerf.SymbolServer.Interfaces\Microsoft.BPerf.SymbolServer.Interfaces.csproj" />
     <ProjectReference Include="..\Microsoft.Diagnostics.Tracing.Stacks\Microsoft.Diagnostics.Tracing.Stacks.csproj" />
   </ItemGroup>
 

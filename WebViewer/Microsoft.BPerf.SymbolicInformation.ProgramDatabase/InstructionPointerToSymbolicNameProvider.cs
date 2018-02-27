@@ -5,8 +5,9 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Microsoft.BPerf.StackInformation.Abstractions;
-    using Microsoft.BPerf.SymbolicInformation.Abstractions;
+    using Microsoft.BPerf.ModuleInformation.Abstractions;
+    using Microsoft.BPerf.PdbSymbolReader.Interfaces;
+    using Microsoft.BPerf.SymbolicInformation.Interfaces;
 
     public sealed class InstructionPointerToSymbolicNameProvider : IInstructionPointerToSymbolicNameProvider
     {
@@ -36,7 +37,7 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
         {
             if (this.methodLoadMap.TryGetValue(pid, out var methodList))
             {
-                var result = methodList.RangeBinarySearch(eip);
+                var result = RangeBinarySearch(methodList, eip);
                 if (result >= 0)
                 {
                     var managedMethodInfo = methodList[result];
@@ -75,7 +76,7 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
         {
             if (this.methodLoadMap.TryGetValue(pid, out var methodList))
             {
-                var result = methodList.RangeBinarySearch(eip);
+                var result = RangeBinarySearch(methodList, eip);
                 if (result >= 0)
                 {
                     var managedMethod = methodList[result];
@@ -103,7 +104,7 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
 
             if (this.imageLoadMap.TryGetValue(pid, out var imageList))
             {
-                var result = imageList.RangeBinarySearch(eip);
+                var result = RangeBinarySearch(imageList, eip);
                 if (result >= 0)
                 {
                     var nativeImageInfo = imageList[result];
@@ -158,11 +159,41 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
             return -1;
         }
 
+        private static int RangeBinarySearch<T>(List<T> sortedArray, ulong frame)
+            where T : SearchableInfo
+        {
+            return RangeBinarySearch(sortedArray, 0, sortedArray.Count - 1, frame);
+        }
+
+        private static int RangeBinarySearch<T>(List<T> sortedArray, int first, int last, ulong frame)
+            where T : SearchableInfo
+        {
+            if (first <= last)
+            {
+                int mid = (first + last) / 2;
+
+                // if the frame is imageBase or within its size
+                if (frame >= sortedArray[mid].Begin && frame <= sortedArray[mid].End)
+                {
+                    return mid;
+                }
+
+                if (frame < sortedArray[mid].Begin)
+                {
+                    return RangeBinarySearch(sortedArray, first, mid - 1, frame);
+                }
+
+                return RangeBinarySearch(sortedArray, mid + 1, last, frame);
+            }
+
+            return -1;
+        }
+
         private string NativeFrameToString(uint pid, ulong eip)
         {
             if (this.imageLoadMap.TryGetValue(pid, out var imageList))
             {
-                var result = imageList.RangeBinarySearch(eip);
+                var result = RangeBinarySearch(imageList, eip);
                 if (result >= 0)
                 {
                     var nativeImageInfo = imageList[result];

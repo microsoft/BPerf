@@ -5,7 +5,7 @@ namespace Microsoft.BPerf.StackViewer
 {
     using System;
     using System.Collections.Generic;
-    using Microsoft.BPerf.SymbolicInformation.Abstractions;
+    using Microsoft.BPerf.SymbolServer.Interfaces;
     using Microsoft.Extensions.Options;
 
     public sealed class SymbolServerInformationProvider : ISymbolServerInformation

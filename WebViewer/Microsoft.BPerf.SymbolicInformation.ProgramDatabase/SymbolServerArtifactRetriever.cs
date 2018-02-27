@@ -13,7 +13,7 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
     using System.Net.Http.Headers;
     using System.Reflection.Metadata;
     using System.Threading.Tasks;
-    using Microsoft.BPerf.SymbolicInformation.Abstractions;
+    using Microsoft.BPerf.SymbolServer.Interfaces;
 
     public sealed class SymbolServerArtifactRetriever : ISymbolServerArtifactRetriever
     {

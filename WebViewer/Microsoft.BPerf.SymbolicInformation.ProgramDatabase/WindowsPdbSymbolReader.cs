@@ -6,8 +6,8 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
     using System.Collections.Generic;
     using System.Text;
     using Dia2Lib;
-    using Microsoft.BPerf.StackInformation.Abstractions;
-    using Microsoft.BPerf.SymbolicInformation.Abstractions;
+    using Microsoft.BPerf.PdbSymbolReader.Interfaces;
+    using Microsoft.BPerf.SymbolicInformation.Interfaces;
 
     internal sealed class WindowsPdbSymbolReader : IPdbSymbolReader
     {

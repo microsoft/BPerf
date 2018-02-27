@@ -8,8 +8,8 @@ namespace Microsoft.BPerf.StackViewer
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.BPerf.SymbolicInformation.Abstractions;
     using Microsoft.BPerf.SymbolicInformation.ProgramDatabase;
+    using Microsoft.BPerf.SymbolServer.Interfaces;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;

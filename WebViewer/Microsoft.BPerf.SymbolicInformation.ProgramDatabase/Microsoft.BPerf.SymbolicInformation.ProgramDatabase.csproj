@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,7 +17,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.BPerf.Internal.CabExtraction\Microsoft.BPerf.Internal.CabExtraction.csproj" />
-    <ProjectReference Include="..\Microsoft.BPerf.SymbolicInformation.Abstractions\Microsoft.BPerf.SymbolicInformation.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.BPerf.ModuleInformation.Abstractions\Microsoft.BPerf.ModuleInformation.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.BPerf.PdbSymbolReader.Interfaces\Microsoft.BPerf.PdbSymbolReader.Interfaces.csproj" />
+    <ProjectReference Include="..\Microsoft.BPerf.SymbolicInformation.Interfaces\Microsoft.BPerf.SymbolicInformation.Interfaces.csproj" />
+    <ProjectReference Include="..\Microsoft.BPerf.SymbolServer.Interfaces\Microsoft.BPerf.SymbolServer.Interfaces.csproj" />
   </ItemGroup>
 
   <Import Project="..\SourceLink.targets" />

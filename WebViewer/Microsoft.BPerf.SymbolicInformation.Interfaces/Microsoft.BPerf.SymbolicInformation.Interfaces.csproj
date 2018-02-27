@@ -2,17 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.BPerf.ModuleInformation.Abstractions\Microsoft.BPerf.ModuleInformation.Abstractions.csproj" />
-    <ProjectReference Include="..\Microsoft.BPerf.StackAggregation\Microsoft.BPerf.StackAggregation.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.0" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.4.0" />
+
   </ItemGroup>
   
   <Import Project="..\SourceLink.targets" />

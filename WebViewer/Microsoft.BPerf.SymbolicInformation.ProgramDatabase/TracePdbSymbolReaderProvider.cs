@@ -1,4 +1,7 @@
-﻿namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
 {
     using System;
     using System.Collections.Generic;
@@ -7,8 +10,9 @@
     using System.Reflection.PortableExecutable;
     using System.Runtime.InteropServices;
     using System.Threading.Tasks;
-    using Microsoft.BPerf.StackInformation.Abstractions;
-    using Microsoft.BPerf.SymbolicInformation.Abstractions;
+    using Microsoft.BPerf.ModuleInformation.Abstractions;
+    using Microsoft.BPerf.PdbSymbolReader.Interfaces;
+    using Microsoft.BPerf.SymbolServer.Interfaces;
 
     public sealed class TracePdbSymbolReaderProvider : ITracePdbSymbolReaderProvider
     {

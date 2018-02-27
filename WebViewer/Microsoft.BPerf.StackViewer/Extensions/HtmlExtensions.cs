@@ -34,6 +34,8 @@ namespace Microsoft.BPerf.StackViewer
                 str = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(str, p.Key, p.Value);
             }
 
+            str = str.Substring(str.IndexOf('/', str.IndexOf('/', str.IndexOf('/') + 1) + 1));
+
             return new HtmlString("<a href=\"" + str + "\">" + linkText + "</a>");
         }
 
@@ -54,6 +56,8 @@ namespace Microsoft.BPerf.StackViewer
 
                 str = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(str, p.Key, p.Value);
             }
+
+            str = str.Substring(str.IndexOf('/', str.IndexOf('/', str.IndexOf('/') + 1) + 1));
 
             return new HtmlString("<a target=\"_blank\" href=\"" + str + "\">" + linkText + "</a>");
         }

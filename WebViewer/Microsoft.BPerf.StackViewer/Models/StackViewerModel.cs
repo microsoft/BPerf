@@ -7,7 +7,7 @@ namespace Microsoft.BPerf.StackViewer
     using Microsoft.AspNetCore.Http;
     using Microsoft.BPerf.StackInformation.Abstractions;
 
-    public class StackViewerModel : IFileLocationProvider
+    public class StackViewerModel
     {
         public StackViewerModel(IHttpContextAccessor httpContextAccessor)
             : this(httpContextAccessor.HttpContext)

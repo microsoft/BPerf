@@ -12,7 +12,7 @@ namespace Microsoft.BPerf.StackViewer
     using System.Threading.Tasks;
     using Microsoft.BPerf.StackInformation.Abstractions;
     using Microsoft.BPerf.StackInformation.Etw;
-    using Microsoft.BPerf.SymbolicInformation.Abstractions;
+    using Microsoft.BPerf.SymbolServer.Interfaces;
 
     public sealed class DeserializedData : IDeserializedData
     {

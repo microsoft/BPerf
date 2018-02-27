@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.12
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.StackViewer", "Microsoft.BPerf.StackViewer\Microsoft.BPerf.StackViewer.csproj", "{D97BBB84-D818-4482-909C-387827165626}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.StackInformation.Abstractions", "Microsoft.BPerf.StackInformation.Abstractions\Microsoft.BPerf.StackInformation.Abstractions.csproj", "{4E5B8013-9E3B-41AF-B9FE-955F54D034B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.ModuleInformation.Abstractions", "Microsoft.BPerf.ModuleInformation.Abstractions\Microsoft.BPerf.ModuleInformation.Abstractions.csproj", "{4E5B8013-9E3B-41AF-B9FE-955F54D034B2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.StackInformation.Etw", "Microsoft.BPerf.StackInformation.Etw\Microsoft.BPerf.StackInformation.Etw.csproj", "{C438BF26-6991-4911-9416-99BB85226E7E}"
 EndProject
@@ -13,9 +13,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.Traci
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.SymbolicInformation.ProgramDatabase", "Microsoft.BPerf.SymbolicInformation.ProgramDatabase\Microsoft.BPerf.SymbolicInformation.ProgramDatabase.csproj", "{8BE84DAB-E793-47E3-82D2-7478A88E08F6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.SymbolicInformation.Abstractions", "Microsoft.BPerf.SymbolicInformation.Abstractions\Microsoft.BPerf.SymbolicInformation.Abstractions.csproj", "{6F6A98B4-EAA0-4997-9D07-440C9C1B6F92}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.Internal.CabExtraction", "Microsoft.BPerf.Internal.CabExtraction\Microsoft.BPerf.Internal.CabExtraction.csproj", "{85A1E1A7-FB2A-4026-8C4E-029637799367}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.StackAggregation", "Microsoft.BPerf.StackAggregation\Microsoft.BPerf.StackAggregation.csproj", "{C81546AB-BFDE-46B6-9193-D848EF6E00AA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.SymbolicInformation.Interfaces", "Microsoft.BPerf.SymbolicInformation.Interfaces\Microsoft.BPerf.SymbolicInformation.Interfaces.csproj", "{710944E8-8B55-4C4A-8C3D-9993AF0CEC2B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.BPerf.SymbolServer.Interfaces", "Microsoft.BPerf.SymbolServer.Interfaces\Microsoft.BPerf.SymbolServer.Interfaces.csproj", "{218EBA63-B5CD-4036-BCF4-B7DEFEB5F94A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.BPerf.PdbSymbolReader.Interfaces", "Microsoft.BPerf.PdbSymbolReader.Interfaces\Microsoft.BPerf.PdbSymbolReader.Interfaces.csproj", "{8C97A0A7-F5C6-46E1-8371-E91739C7B154}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,14 +49,26 @@ Global
 		{8BE84DAB-E793-47E3-82D2-7478A88E08F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8BE84DAB-E793-47E3-82D2-7478A88E08F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8BE84DAB-E793-47E3-82D2-7478A88E08F6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6F6A98B4-EAA0-4997-9D07-440C9C1B6F92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6F6A98B4-EAA0-4997-9D07-440C9C1B6F92}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6F6A98B4-EAA0-4997-9D07-440C9C1B6F92}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6F6A98B4-EAA0-4997-9D07-440C9C1B6F92}.Release|Any CPU.Build.0 = Release|Any CPU
 		{85A1E1A7-FB2A-4026-8C4E-029637799367}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{85A1E1A7-FB2A-4026-8C4E-029637799367}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{85A1E1A7-FB2A-4026-8C4E-029637799367}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{85A1E1A7-FB2A-4026-8C4E-029637799367}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C81546AB-BFDE-46B6-9193-D848EF6E00AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C81546AB-BFDE-46B6-9193-D848EF6E00AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C81546AB-BFDE-46B6-9193-D848EF6E00AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C81546AB-BFDE-46B6-9193-D848EF6E00AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{710944E8-8B55-4C4A-8C3D-9993AF0CEC2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{710944E8-8B55-4C4A-8C3D-9993AF0CEC2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{710944E8-8B55-4C4A-8C3D-9993AF0CEC2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{710944E8-8B55-4C4A-8C3D-9993AF0CEC2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{218EBA63-B5CD-4036-BCF4-B7DEFEB5F94A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{218EBA63-B5CD-4036-BCF4-B7DEFEB5F94A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{218EBA63-B5CD-4036-BCF4-B7DEFEB5F94A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{218EBA63-B5CD-4036-BCF4-B7DEFEB5F94A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C97A0A7-F5C6-46E1-8371-E91739C7B154}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C97A0A7-F5C6-46E1-8371-E91739C7B154}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C97A0A7-F5C6-46E1-8371-E91739C7B154}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C97A0A7-F5C6-46E1-8371-E91739C7B154}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

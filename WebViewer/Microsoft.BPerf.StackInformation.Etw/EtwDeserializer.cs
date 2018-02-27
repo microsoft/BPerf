@@ -8,7 +8,8 @@ namespace Microsoft.BPerf.StackInformation.Etw
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using System.Text;
-    using Microsoft.BPerf.StackInformation.Abstractions;
+    using Microsoft.BPerf.ModuleInformation.Abstractions;
+    using Microsoft.BPerf.StackAggregation;
     using Microsoft.Diagnostics.Tracing.Stacks;
     using static RawReaders;
 
@@ -217,7 +218,7 @@ namespace Microsoft.BPerf.StackInformation.Etw
                 if (this.ImageLoadMap.TryGetValue(frame.ProcessId, out var imageList))
                 {
                     var eip = frame.InstructionPointer;
-                    var result = imageList.RangeBinarySearch(eip);
+                    var result = RangeBinarySearch(imageList, eip);
                     if (result >= 0)
                     {
                         imageList[result].InstructionPointers.Add(eip);
@@ -231,7 +232,7 @@ namespace Microsoft.BPerf.StackInformation.Etw
             foreach (var frame in frames)
             {
                 var eip = frame.InstructionPointer;
-                var result = pidZeroList.RangeBinarySearch(eip);
+                var result = RangeBinarySearch(pidZeroList, eip);
                 if (result >= 0)
                 {
                     // add eips encountered in other processes to this one.
@@ -402,6 +403,36 @@ namespace Microsoft.BPerf.StackInformation.Etw
             }
 
             return $"Event({providerId})/{eventId}";
+        }
+
+        private static int RangeBinarySearch<T>(List<T> sortedArray, ulong frame)
+            where T : SearchableInfo
+        {
+            return RangeBinarySearch(sortedArray, 0, sortedArray.Count - 1, frame);
+        }
+
+        private static int RangeBinarySearch<T>(List<T> sortedArray, int first, int last, ulong frame)
+            where T : SearchableInfo
+        {
+            if (first <= last)
+            {
+                int mid = (first + last) / 2;
+
+                // if the frame is imageBase or within its size
+                if (frame >= sortedArray[mid].Begin && frame <= sortedArray[mid].End)
+                {
+                    return mid;
+                }
+
+                if (frame < sortedArray[mid].Begin)
+                {
+                    return RangeBinarySearch(sortedArray, first, mid - 1, frame);
+                }
+
+                return RangeBinarySearch(sortedArray, mid + 1, last, frame);
+            }
+
+            return -1;
         }
 
         private bool BufferCallback(IntPtr logfile)

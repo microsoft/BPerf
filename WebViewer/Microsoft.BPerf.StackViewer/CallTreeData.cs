@@ -12,10 +12,11 @@ namespace Microsoft.BPerf.StackViewer
     using System.Threading;
     using System.Threading.Tasks;
     using global::Diagnostics.Tracing.StackSources;
-    using Microsoft.BPerf.StackInformation.Abstractions;
+    using Microsoft.BPerf.ModuleInformation.Abstractions;
+    using Microsoft.BPerf.StackAggregation;
     using Microsoft.BPerf.StackInformation.Etw;
-    using Microsoft.BPerf.SymbolicInformation.Abstractions;
     using Microsoft.BPerf.SymbolicInformation.ProgramDatabase;
+    using Microsoft.BPerf.SymbolServer.Interfaces;
     using Microsoft.Diagnostics.Tracing.Stacks;
     using Newtonsoft.Json.Linq;
 
@@ -219,7 +220,7 @@ namespace Microsoft.BPerf.StackViewer
 
                     var client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
                     {
-                        DefaultRequestHeaders = { Authorization = new AuthenticationHeaderValue("Basic", "Om9zaTN3ZGZiaXh0NHpwc3R5cTRmNHV5bG42bncyNzRkaHFrZ3VnYWJyeXRtNzI2eTI2N3E=") },
+                        DefaultRequestHeaders = { Authorization = new AuthenticationHeaderValue("Basic", "FIXME") },
                         BaseAddress = new Uri(urlPath)
                     };
 

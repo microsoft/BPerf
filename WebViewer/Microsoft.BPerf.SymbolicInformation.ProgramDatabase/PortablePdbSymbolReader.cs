@@ -9,8 +9,8 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
     using System.Reflection.Metadata;
     using System.Reflection.Metadata.Ecma335;
     using System.Text;
-    using Microsoft.BPerf.StackInformation.Abstractions;
-    using Microsoft.BPerf.SymbolicInformation.Abstractions;
+    using Microsoft.BPerf.PdbSymbolReader.Interfaces;
+    using Microsoft.BPerf.SymbolicInformation.Interfaces;
 
     internal sealed class PortablePdbSymbolReader : IPdbSymbolReader
     {

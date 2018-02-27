@@ -3,7 +3,7 @@
 
 namespace Microsoft.BPerf.StackViewer
 {
-    using Microsoft.BPerf.SymbolicInformation.Abstractions;
+    using Microsoft.BPerf.SymbolServer.Interfaces;
 
     public sealed class SymbolServer : ISymbolServer
     {
