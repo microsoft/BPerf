@@ -5,7 +5,6 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
 {
     using System.Collections.Generic;
     using System.Text;
-    using Dia2Lib;
     using Microsoft.BPerf.PdbSymbolReader.Interfaces;
     using Microsoft.BPerf.SymbolicInformation.Interfaces;
 
@@ -29,95 +28,69 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
 
         public SourceLocation FindSourceLocation(uint rva)
         {
-            var dataSource = DiaLoader.GetDiaSourceObject();
-            dataSource.loadDataFromPdb(this.pdbPath);
-            dataSource.openSession(out var session);
+            LineColumnInformation lineColumnInformation;
+            string sourceLink;
+            string srcSrv;
 
-            session.findLinesByRVA(rva, 0, out var sourceLocs);
-            sourceLocs.Next(1, out var sourceLoc, out var fetchCount);
-            if (fetchCount == 0)
+            using (var reader = new NativePdbReader(this.pdbPath))
             {
-                return null;
-            }
+                reader.GetSourceLinkData(out sourceLink);
+                reader.GetSrcSrvData(out srcSrv);
 
-            dataSource.getStreamSize("srcsrv", out var len);
-
-            string srcSrvString = null;
-            if (len > 0)
-            {
-                var buffer = new byte[len];
-                unsafe
+                // TODO: FIXME
+                if (!reader.FindLineNumberForNativeMethod(rva, out lineColumnInformation))
                 {
-                    fixed (byte* bufferPtr = buffer)
-                    {
-                        dataSource.getStreamRawData("srcsrv", len, out *bufferPtr);
-                        srcSrvString = Encoding.UTF8.GetString(buffer);
-                    }
+                    return null;
                 }
             }
 
-            var sourceFile = new SourceFile(sourceLoc.sourceFile.fileName, len == 0 ? SourceKind.Indexed : SourceKind.None, srcSrvString); // we should support embedded
-            var lineNum = (int)sourceLoc.lineNumber;
+            var sourceIndexKind = SourceKind.None;
 
-            return new SourceLocation(sourceFile, lineNum);
+            if (!string.IsNullOrEmpty(srcSrv))
+            {
+                sourceIndexKind = SourceKind.SrcSrv;
+            }
+            else if (!string.IsNullOrEmpty(srcSrv))
+            {
+                sourceIndexKind = SourceKind.SourceLink;
+            }
+
+            var sourceFile = new SourceFile(lineColumnInformation.Filename, sourceIndexKind, sourceIndexKind == SourceKind.SourceLink ? sourceLink : srcSrv); // we should support embedded
+
+            return new SourceLocation(sourceFile, (int)lineColumnInformation.LineStart);
         }
 
         public SourceLocation FindSourceLocation(uint methodToken, int offset)
         {
-            var dataSource = DiaLoader.GetDiaSourceObject();
-            dataSource.loadDataFromPdb(this.pdbPath);
-            dataSource.openSession(out var session);
+            LineColumnInformation lineColumnInformation;
+            string sourceLink;
+            string srcSrv;
 
-            session.findSymbolByToken(methodToken, SymTagEnum.SymTagFunction, out var methodSym);
-            if (methodSym == null)
+            using (var reader = new NativePdbReader(this.pdbPath))
             {
-                return null;
-            }
+                reader.GetSourceLinkData(out sourceLink);
+                reader.GetSrcSrvData(out srcSrv);
 
-            session.findLinesByRVA(methodSym.relativeVirtualAddress + (uint)offset, 256, out var sourceLocs);
-            sourceLocs.Next(1, out var sourceLoc, out uint fetchCount);
-            if (fetchCount == 0)
-            {
-                return null;
-            }
-
-            dataSource.getStreamSize("srcsrv", out var len);
-
-            string srcSrvString = null;
-            if (len > 0)
-            {
-                var buffer = new byte[len];
-                unsafe
+                if (!reader.FindLineNumberForManagedMethod(methodToken, (uint)offset, out lineColumnInformation))
                 {
-                    fixed (byte* bufferPtr = buffer)
-                    {
-                        dataSource.getStreamRawData("srcsrv", len, out *bufferPtr);
-                        srcSrvString = Encoding.UTF8.GetString(buffer);
-                    }
+                    return null;
                 }
             }
 
-            var sourceFile = new SourceFile(sourceLoc.sourceFile.fileName, len == 0 ? SourceKind.Indexed : SourceKind.None, srcSrvString); // we should support embedded
+            var sourceIndexKind = SourceKind.None;
 
-            int lineNum;
-
-            while (true)
+            if (!string.IsNullOrEmpty(srcSrv))
             {
-                lineNum = (int)sourceLoc.lineNumber;
-                if (lineNum != 0xFEEFEE)
-                {
-                    break;
-                }
-
-                lineNum = 0;
-                sourceLocs.Next(1, out sourceLoc, out fetchCount);
-                if (fetchCount == 0)
-                {
-                    break;
-                }
+                sourceIndexKind = SourceKind.SrcSrv;
+            }
+            else if (!string.IsNullOrEmpty(srcSrv))
+            {
+                sourceIndexKind = SourceKind.SourceLink;
             }
 
-            return new SourceLocation(sourceFile, lineNum);
+            var sourceFile = new SourceFile(lineColumnInformation.Filename, sourceIndexKind, sourceIndexKind == SourceKind.SourceLink ? sourceLink : srcSrv); // we should support embedded
+
+            return new SourceLocation(sourceFile, (int)lineColumnInformation.LineStart);
         }
 
         public void AddInstructionPointersForProcess(uint pid, ulong imageBase, HashSet<ulong> instructionPointers)
@@ -151,58 +124,26 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
                     return;
                 }
 
-                var dataSource = DiaLoader.GetDiaSourceObject();
-                dataSource.loadDataFromPdb(this.pdbPath);
-                dataSource.openSession(out var session);
-                session.getSymbolsByAddr(out var symbolsByAddr);
-
-                foreach (var rva in rvasToLookup)
+                using (var reader = new NativePdbReader(this.pdbPath))
                 {
-                    this.AddEntry(session, symbolsByAddr, rva + imageBase, rva);
-                }
+                    foreach (var rva in rvasToLookup)
+                    {
+                        ulong eip = rva + imageBase;
 
-                symbolsByAddr = null;
-                session = null;
-                dataSource = null;
+                        if (!reader.FindNameForRVA(rva, out var functionName))
+                        {
+                            functionName = eip.ToString("x");
+                        }
+
+                        this.rvaToFunctionNameMap.Add(rva, functionName);
+                    }
+                }
             }
         }
 
         private bool HasAnyInstructionPointersForProcess(uint pid)
         {
             return this.processIdsProcessed.Contains(pid);
-        }
-
-        private void AddEntry(IDiaSession session, IDiaEnumSymbolsByAddr symbolsByAddr, ulong eip, uint rva)
-        {
-            session.findSymbolByRVA(rva, SymTagEnum.SymTagPublicSymbol, out var symbol);
-            if (symbol == null)
-            {
-                session.findSymbolByRVA(rva, SymTagEnum.SymTagFunction, out symbol);
-                if (symbol == null)
-                {
-                    symbol = symbolsByAddr.symbolByRVA(rva);
-                }
-            }
-
-            string functionName;
-            if (symbol != null)
-            {
-                symbol.get_undecoratedNameEx(0x1000, out var unmangled);
-                if (!string.IsNullOrEmpty(unmangled))
-                {
-                    functionName = unmangled;
-                }
-                else
-                {
-                    functionName = !string.IsNullOrEmpty(symbol.name) ? symbol.name : eip.ToString("x");
-                }
-            }
-            else
-            {
-                functionName = eip.ToString("x");
-            }
-
-            this.rvaToFunctionNameMap.Add(rva, functionName);
         }
     }
 }

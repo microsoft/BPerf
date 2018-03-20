@@ -145,22 +145,12 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
 
         private static bool IsValidPdb(string pdbPath, Guid signature, uint age)
         {
-            // otherwise we'll try to load DIA on non Windows
-            if (File.Exists(pdbPath) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (File.Exists(pdbPath))
             {
-                var dataSource = DiaLoader.GetDiaSourceObject();
-                var local = signature;
-
-                try
+                using (var reader = new NativePdbReader(pdbPath, signature, age))
                 {
-                    dataSource.loadAndValidateDataFromPdb(pdbPath, ref local, 0x53445352, age);
+                    return reader.IsValid();
                 }
-                catch (COMException)
-                {
-                    return false;
-                }
-
-                return true;
             }
 
             return false;

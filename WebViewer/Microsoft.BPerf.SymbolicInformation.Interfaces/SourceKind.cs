@@ -8,6 +8,7 @@ namespace Microsoft.BPerf.SymbolicInformation.Interfaces
         None,
         Illegal,
         Embedded,
-        Indexed
+        SrcSrv,
+        SourceLink
     }
 }

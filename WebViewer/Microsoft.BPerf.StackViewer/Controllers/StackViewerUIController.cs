@@ -3,8 +3,10 @@
 
 namespace Microsoft.BPerf.StackViewer
 {
+    using System.Text;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.WebUtilities;
     using Microsoft.Extensions.Options;
 
     public sealed class StackViewerUIController : Controller
@@ -39,10 +41,7 @@ namespace Microsoft.BPerf.StackViewer
         [Route("ui/stackviewer/callertree", Name = "Callers", Order = 2)]
         public async ValueTask<ActionResult> Callers(string name)
         {
-            if (name.Contains("&"))
-            {
-                name = name.Replace("&", "%26");
-            }
+            name = Encoding.UTF8.GetString(Base64UrlTextEncoder.Decode(name));
 
             this.ViewBag.Title = "Callers Viewer";
 
@@ -58,10 +57,7 @@ namespace Microsoft.BPerf.StackViewer
         [Route("ui/stackviewer/callertree/children", Name = "CallersChildren", Order = 1)]
         public async ValueTask<ActionResult> CallersChildren(string name, string path)
         {
-            if (name.Contains("&"))
-            {
-                name = name.Replace("&", "%26");
-            }
+            name = Encoding.UTF8.GetString(Base64UrlTextEncoder.Decode(name));
 
             var model = new CallersViewStackViewerViewModel(this.HttpContext)
             {
@@ -75,10 +71,7 @@ namespace Microsoft.BPerf.StackViewer
         [Route("ui/stackviewer/source/callertree", Name = "SourceViewer")]
         public async ValueTask<ActionResult> SourceViewer(string name, string path)
         {
-            if (name.Contains("&"))
-            {
-                name = name.Replace("&", "%26");
-            }
+            name = Encoding.UTF8.GetString(Base64UrlTextEncoder.Decode(name));
 
             return this.View(await this.controller.CallerContextSource(name, path));
         }

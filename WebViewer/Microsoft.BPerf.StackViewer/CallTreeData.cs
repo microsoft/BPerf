@@ -34,6 +34,8 @@ namespace Microsoft.BPerf.StackViewer
 
         private readonly ISymbolServerArtifactRetriever symbolServerArtifactRetriever;
 
+        private readonly ISourceServerAuthorizationInformationProvider sourceServerInformationProvider;
+
         private readonly EtwDeserializer deserializer;
 
         private readonly StackViewerModel model;
@@ -42,9 +44,10 @@ namespace Microsoft.BPerf.StackViewer
 
         private CallTree callTree;
 
-        public CallTreeData(ISymbolServerArtifactRetriever symbolServerArtifactRetriever, EtwDeserializer deserializer, StackViewerModel model)
+        public CallTreeData(ISymbolServerArtifactRetriever symbolServerArtifactRetriever, ISourceServerAuthorizationInformationProvider sourceServerInformationProvider, EtwDeserializer deserializer, StackViewerModel model)
         {
             this.symbolServerArtifactRetriever = symbolServerArtifactRetriever;
+            this.sourceServerInformationProvider = sourceServerInformationProvider;
             this.deserializer = deserializer;
             this.model = model;
         }
@@ -220,9 +223,14 @@ namespace Microsoft.BPerf.StackViewer
 
                     var client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
                     {
-                        DefaultRequestHeaders = { Authorization = new AuthenticationHeaderValue("Basic", "FIXME") },
                         BaseAddress = new Uri(urlPath)
                     };
+
+                    var authorizationHeader = this.sourceServerInformationProvider.GetAuthorizationHeaderValue(urlPath);
+                    if (!string.IsNullOrEmpty(authorizationHeader))
+                    {
+                        client.DefaultRequestHeaders.Add("Authorization", authorizationHeader);
+                    }
 
                     var result = client.GetStringAsync(urlPath).Result;
 

@@ -34,12 +34,14 @@ namespace Microsoft.BPerf.StackViewer
             services.Configure<SymbolServerInformation>(this.Configuration.GetSection("SymbolServerInformation"));
             services.Configure<CacheSettings>(this.Configuration.GetSection("CacheSettings"));
             services.Configure<StackViewerSettings>(this.Configuration.GetSection("StackViewerSettings"));
+            services.Configure<SourceServerAuthorizationInformation>(this.Configuration.GetSection("SourceServerAuthorizationInformation"));
 
             services.AddMvc();
             services.AddMemoryCache();
             services.AddTransient<StackViewerController, StackViewerController>();
             services.AddTransient<ICallTreeData, CallTreeData>();
             services.AddTransient<ISymbolServerArtifactRetriever, SymbolServerArtifactRetriever>();
+            services.AddSingleton<ISourceServerAuthorizationInformationProvider, SourceServerAuthorizationInformationProvider>();
             services.AddTransient<StackViewerModel, StackViewerModel>();
             services.AddSingleton<IDeserializedDataCache, DeserializedDataCache>();
             services.AddSingleton<CallTreeDataCache, CallTreeDataCache>();
@@ -52,7 +54,8 @@ namespace Microsoft.BPerf.StackViewer
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             // TODO: Make this crossplat
-            var etlDir = Environment.ExpandEnvironmentVariables(app.ApplicationServices.GetService<IOptions<StackViewerSettings>>().Value.TemporaryDataFileDownloadLocation);
+            var etlDir = Path.GetFullPath(Environment.ExpandEnvironmentVariables(app.ApplicationServices.GetService<IOptions<StackViewerSettings>>().Value.TemporaryDataFileDownloadLocation));
+            app.ApplicationServices.GetService<IOptions<StackViewerSettings>>().Value.TemporaryDataFileDownloadLocation = etlDir;
             Directory.CreateDirectory(etlDir);
             Directory.SetCurrentDirectory(etlDir);
 
