@@ -232,7 +232,7 @@ namespace Microsoft.BPerf.StackViewer
                         client.DefaultRequestHeaders.Add("Authorization", authorizationHeader);
                     }
 
-                    var result = client.GetStringAsync(urlPath).Result;
+                    var result = await client.GetStringAsync(urlPath);
 
                     var lines = result.Split('\n');
 

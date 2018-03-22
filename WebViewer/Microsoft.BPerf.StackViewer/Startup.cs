@@ -57,7 +57,6 @@ namespace Microsoft.BPerf.StackViewer
             var etlDir = Path.GetFullPath(Environment.ExpandEnvironmentVariables(app.ApplicationServices.GetService<IOptions<StackViewerSettings>>().Value.TemporaryDataFileDownloadLocation));
             app.ApplicationServices.GetService<IOptions<StackViewerSettings>>().Value.TemporaryDataFileDownloadLocation = etlDir;
             Directory.CreateDirectory(etlDir);
-            Directory.SetCurrentDirectory(etlDir);
 
             loggerFactory.AddConsole();
             app.UseStaticFiles();

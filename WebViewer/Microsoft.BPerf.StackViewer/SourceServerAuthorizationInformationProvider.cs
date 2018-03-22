@@ -20,7 +20,7 @@ namespace Microsoft.BPerf.StackViewer
         {
             foreach (var sourceServer in this.sourceServers)
             {
-                if (sourceServer.UrlPrefix.StartsWith(url))
+                if (url.StartsWith(sourceServer.UrlPrefix))
                 {
                     return sourceServer.AuthorizationHeader;
                 }

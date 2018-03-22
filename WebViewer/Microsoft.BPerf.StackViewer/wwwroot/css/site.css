@@ -1,5 +1,5 @@
 ﻿table.treetable { font-family: Courier; font-size: 12px; }
-#hotspots { font-family: Courier; font-size: 12px; }
+#hotspots { font-family: Courier; font-size: 12px; line-height: 1; }
 
 table.treetable span.indenter {
   display: inline-block;
@@ -79,4 +79,4 @@ table.treetable tr.expanded.accept td span.indenter a {
 
 #sourcenotice { font-family: Calibri;font-weight: bold;padding: 4px; color: #008b8b}
 
-#calltree { display: none}
+#calltree { display: none; line-height: 1; }

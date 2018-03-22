@@ -213,17 +213,20 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
             return true;
         }
 
-        private static bool IsValidPdb(string pdbPath, Guid signature, uint age)
+        private static bool IsValidPdb(string pdbPath, Guid incomingSignature, uint incomingAge)
         {
-            if (File.Exists(pdbPath))
+            try
             {
-                using (var reader = new NativePdbReader(pdbPath, signature, age))
-                {
-                    return reader.IsValid();
-                }
+                var dataSource = DiaLoader.GetDiaSourceObject();
+                var local = incomingSignature;
+                dataSource.loadAndValidateDataFromPdb(pdbPath, ref local, 0x53445352, incomingAge);
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                return false;
             }
 
-            return false;
+            return true;
         }
 
         private static bool IsValidPortablePdb(string pdbPath, Guid signature)

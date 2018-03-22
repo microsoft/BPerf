@@ -10,7 +10,7 @@
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
-    <PackageReference Include="Microsoft.BPerf.Dia2Lib" Version="1.0.1" />
+    <PackageReference Include="Microsoft.BPerf.Dia2Lib" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,6 +25,20 @@
     <ProjectReference Include="..\Microsoft.BPerf.SymbolicInformation.ProgramDatabase\Microsoft.BPerf.SymbolicInformation.ProgramDatabase.csproj" />
     <ProjectReference Include="..\Microsoft.BPerf.SymbolServer.Interfaces\Microsoft.BPerf.SymbolServer.Interfaces.csproj" />
     <ProjectReference Include="..\Microsoft.Diagnostics.Tracing.Stacks\Microsoft.Diagnostics.Tracing.Stacks.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="amd64\" />
+    <Folder Include="x86\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="amd64\msdia140.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="x86\msdia140.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <Import Project="..\SourceLink.targets" />

@@ -27,7 +27,7 @@
     </div>
 </nav>
 
-<div style="margin-left: 1px">
+<div style="margin-left: 1px; margin-top: 60px;">
 
     <form action="/ui/stackviewer/summary" method="get" class="form-inline">
         <input type="hidden" name="Filename" value="@this.Model.Filename">
@@ -57,7 +57,8 @@
             <button type="submit" class="btn btn-primary">Update</button>
         </div>
     </form>
-    <hr/>
+
+    <br />
 
     @this.RenderBody()
 </div>
