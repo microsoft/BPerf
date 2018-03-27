@@ -20,6 +20,8 @@ namespace Microsoft.BPerf.StackViewer
 
         private readonly FileLocationType locationType;
 
+        private readonly ISourceServerAuthorizationInformationProvider sourceServerAuthorizationInformationProvider;
+
         private readonly ISymbolServerArtifactRetriever symbolServerArtifactRetriever;
 
         private readonly string tempDownloadLocation;
@@ -36,10 +38,11 @@ namespace Microsoft.BPerf.StackViewer
 
         private EtwDeserializer deserializer;
 
-        public DeserializedData(string uri, FileLocationType locationType, ISymbolServerArtifactRetriever symbolServerArtifactRetriever, string tempDownloadLocation)
+        public DeserializedData(string uri, FileLocationType locationType, ISourceServerAuthorizationInformationProvider sourceServerAuthorizationInformationProvider, ISymbolServerArtifactRetriever symbolServerArtifactRetriever, string tempDownloadLocation)
         {
             this.uri = uri;
             this.locationType = locationType;
+            this.sourceServerAuthorizationInformationProvider = sourceServerAuthorizationInformationProvider;
             this.symbolServerArtifactRetriever = symbolServerArtifactRetriever;
             this.tempDownloadLocation = tempDownloadLocation;
         }
@@ -58,7 +61,7 @@ namespace Microsoft.BPerf.StackViewer
             {
                 if (!this.callTreeDataCache.TryGetValue(model, out var value))
                 {
-                    value = new CallTreeData(this.symbolServerArtifactRetriever, this.deserializer, model);
+                    value = new CallTreeData(this.symbolServerArtifactRetriever, this.sourceServerAuthorizationInformationProvider, this.deserializer, model);
                     this.callTreeDataCache.Add(model, value);
                 }
 
@@ -80,7 +83,7 @@ namespace Microsoft.BPerf.StackViewer
                 {
                     using (var streamToReadFrom = await response.Content.ReadAsStreamAsync())
                     {
-                        string fileToWriteTo = Path.Combine(Environment.ExpandEnvironmentVariables(this.tempDownloadLocation) + Guid.NewGuid() + ".etl");
+                        string fileToWriteTo = Path.Combine(this.tempDownloadLocation + Guid.NewGuid() + ".etl");
                         using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
                         {
                             await streamToReadFrom.CopyToAsync(streamToWriteTo);

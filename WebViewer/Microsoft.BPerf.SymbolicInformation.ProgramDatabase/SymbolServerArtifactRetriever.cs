@@ -10,7 +10,6 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
     using System.Management.Automation.Internal;
     using System.Net;
     using System.Net.Http;
-    using System.Net.Http.Headers;
     using System.Reflection.Metadata;
     using System.Threading.Tasks;
     using Microsoft.BPerf.SymbolServer.Interfaces;
@@ -150,9 +149,13 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
         {
             var client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
             {
-                DefaultRequestHeaders = { Authorization = new AuthenticationHeaderValue("Basic", symbolServer.AuthorizationHeader) },
                 BaseAddress = new Uri(symbolServer.Url)
             };
+
+            if (!string.IsNullOrEmpty(symbolServer.AuthorizationHeader))
+            {
+                client.DefaultRequestHeaders.Add("Authorization", symbolServer.AuthorizationHeader);
+            }
 
             return client;
         }
@@ -164,6 +167,11 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
                 using (HttpResponseMessage response = await client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead))
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        return false;
+                    }
+
+                    if (response.StatusCode == HttpStatusCode.Unauthorized)
                     {
                         return false;
                     }
@@ -205,13 +213,13 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
             return true;
         }
 
-        private static bool IsValidPdb(string pdbPath, Guid signature, uint age)
+        private static bool IsValidPdb(string pdbPath, Guid incomingSignature, uint incomingAge)
         {
             try
             {
                 var dataSource = DiaLoader.GetDiaSourceObject();
-                var local = signature;
-                dataSource.loadAndValidateDataFromPdb(pdbPath, ref local, 0x53445352, age);
+                var local = incomingSignature;
+                dataSource.loadAndValidateDataFromPdb(pdbPath, ref local, 0x53445352, incomingAge);
             }
             catch (System.Runtime.InteropServices.COMException)
             {

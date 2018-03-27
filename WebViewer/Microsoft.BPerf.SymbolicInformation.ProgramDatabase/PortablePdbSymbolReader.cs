@@ -92,14 +92,14 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
 
                     customDebugInformationHandleCollection = metadataReader.CustomDebugInformation;
 
-                    string srcSrvString = null;
+                    string sourceLinkString = null;
                     foreach (var customDebugInformationHandle in customDebugInformationHandleCollection)
                     {
                         var customDebugInformation = metadataReader.GetCustomDebugInformation(customDebugInformationHandle);
 
                         if (metadataReader.GetGuid(customDebugInformation.Kind) == SourceLink)
                         {
-                            srcSrvString = Encoding.UTF8.GetString(metadataReader.GetBlobBytes(customDebugInformation.Value));
+                            sourceLinkString = Encoding.UTF8.GetString(metadataReader.GetBlobBytes(customDebugInformation.Value));
                         }
                     }
 
@@ -127,11 +127,11 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
                     }
 
                     var kind = lineNumber == -1 ? SourceKind.Illegal : SourceKind.None;
-                    kind = srcSrvString != null ? SourceKind.Indexed : kind;
+                    kind = sourceLinkString != null ? SourceKind.SourceLink : kind;
                     kind = embeddedSource ? SourceKind.Embedded : kind; /* yeah, kinda weird that embedded takes precedence, in fact it could be indexed and embedded
                                                                            however, if it is embedded likely I want to get it from here because I already have it */
 
-                    return new SourceLocation(new SourceFile(documentName, kind, srcSrvString), lineNumber);
+                    return new SourceLocation(new SourceFile(documentName, kind, sourceLinkString), lineNumber);
                 }
             }
         }

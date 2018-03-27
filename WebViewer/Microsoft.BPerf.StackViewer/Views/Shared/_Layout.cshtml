@@ -1,10 +1,9 @@
 ﻿@model StackViewerViewModel
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>BPerf</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/bootstrap-table.min.css" />
@@ -12,59 +11,61 @@
 
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">BPerf</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/ui/eventlist?filename=@this.Model.Filename">@this.Model.Filename</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="#">BPerf</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-    <div style="margin-left: 1px">
-
-        <form action="/ui/stackviewer/summary" method="get" class="form-inline">
-            <input type="hidden" name="Filename" value="@this.Model.Filename">
-            <input type="hidden" name="StackType" value="@this.Model.StackType">
-            <input type="hidden" name="Pid" value="@this.Model.Pid">
-
-            <div>
-                <label for="Start">Relative Start Time (ms)</label>
-                <input type="text" class="form-control" id="Start" name="Start" aria-describedby="Start Time" placeholder="0.0" value="@this.Model.Start">
-                <label for="End">Relative End Time (ms)</label>
-                <input type="text" class="form-control" id="End" name="End" aria-describedby="End Time" placeholder="e.g. 5000.0" value="@this.Model.End">
-            </div>
-            <div style="margin-left: 10px">
-                <label for="GroupPatsBox">Grouping Patterns (Regex)</label>
-                <input type="text" name="GroupPats" class="form-control" id="GroupPatsBox" aria-describedby="Start Time" placeholder="{%}!-&gt;module $1" value="@this.Model.GroupPats">
-                <label for="FoldPatsBox">Folding Patterns (Regex)</label>
-                <input type="text" name="FoldPats" class="form-control" id="FoldPatsBox" aria-describedby="End Time" placeholder="ntdll!%" value="@this.Model.FoldPats">
-            </div>
-            <div style="margin-left: 10px">
-                <label for="IncPatsBox">Include Patterns (Regex)</label>
-                <input type="text" name="IncPats" class="form-control" id="IncPatsBox" aria-describedby="Start Time" placeholder="OnlyThisDll!%" value="@this.Model.IncPats">
-                <label for="ExcPatsBox">Exclude Patterns (Regex)</label>
-                <input type="text" name="ExcPats" class="form-control" id="ExcPatsBox" aria-describedby="End Time" placeholder="UnwantedDll!%" value="@this.Model.ExcPats">
-            </div>
-
-            <div style="margin-left: 10px">
-                <button type="submit" class="btn btn-primary">Update</button>
-            </div>
-        </form>
-        <hr />
-
-        @this.RenderBody()
+    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/ui/eventlist?filename=@this.Model.Filename">@this.Model.Filename</a>
+            </li>
+        </ul>
     </div>
+</nav>
 
-    <script src="/js/jquery-3.2.1.min.js"></script>
-    <script src="/js/bootstrap.min.js"></script>
+<div style="margin-left: 1px; margin-top: 60px;">
 
-    @this.RenderSection("scripts", required: false)
+    <form action="/ui/stackviewer/summary" method="get" class="form-inline">
+        <input type="hidden" name="Filename" value="@this.Model.Filename">
+        <input type="hidden" name="StackType" value="@this.Model.StackType">
+        <input type="hidden" name="Pid" value="@this.Model.Pid">
+
+        <div>
+            <label for="Start">Relative Start Time (ms)</label>
+            <input type="text" class="form-control" id="Start" name="Start" aria-describedby="Start Time" placeholder="0.0" value="@this.Model.Start">
+            <label for="End">Relative End Time (ms)</label>
+            <input type="text" class="form-control" id="End" name="End" aria-describedby="End Time" placeholder="e.g. 5000.0" value="@this.Model.End">
+        </div>
+        <div style="margin-left: 10px">
+            <label for="GroupPatsBox">Grouping Patterns (Regex)</label>
+            <input type="text" name="GroupPats" class="form-control" id="GroupPatsBox" aria-describedby="Start Time" placeholder="{%}!-&gt;module $1" value="@this.Model.GroupPats">
+            <label for="FoldPatsBox">Folding Patterns (Regex)</label>
+            <input type="text" name="FoldPats" class="form-control" id="FoldPatsBox" aria-describedby="End Time" placeholder="ntdll!%" value="@this.Model.FoldPats">
+        </div>
+        <div style="margin-left: 10px">
+            <label for="IncPatsBox">Include Patterns (Regex)</label>
+            <input type="text" name="IncPats" class="form-control" id="IncPatsBox" aria-describedby="Start Time" placeholder="OnlyThisDll!%" value="@this.Model.IncPats">
+            <label for="ExcPatsBox">Exclude Patterns (Regex)</label>
+            <input type="text" name="ExcPats" class="form-control" id="ExcPatsBox" aria-describedby="End Time" placeholder="UnwantedDll!%" value="@this.Model.ExcPats">
+        </div>
+
+        <div style="margin-left: 10px">
+            <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+    </form>
+
+    <br />
+
+    @this.RenderBody()
+</div>
+
+<script src="/js/jquery-3.3.1.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+@this.RenderSection("scripts", required: false)
 </body>
 </html>

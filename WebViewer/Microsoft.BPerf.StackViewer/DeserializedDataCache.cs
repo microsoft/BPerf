@@ -13,16 +13,19 @@ namespace Microsoft.BPerf.StackViewer
     {
         private readonly CallTreeDataCache cache;
 
+        private readonly ISourceServerAuthorizationInformationProvider sourceServerAuthorizationInformationProvider;
+
         private readonly ISymbolServerArtifactRetriever symbolServerArtifactRetriever;
 
         private readonly ICacheExpirationTimeProvider cacheExpirationTimeProvider;
 
         private readonly IOptions<StackViewerSettings> stackViewerSettings;
 
-        public DeserializedDataCache(CallTreeDataCache cache, ISymbolServerArtifactRetriever symbolServerArtifactRetriever, ICacheExpirationTimeProvider cacheExpirationTimeProvider, IOptions<StackViewerSettings> stackViewerSettings)
+        public DeserializedDataCache(CallTreeDataCache cache, ISymbolServerArtifactRetriever symbolServerArtifactRetriever, ISourceServerAuthorizationInformationProvider sourceServerAuthorizationInformationProvider, ICacheExpirationTimeProvider cacheExpirationTimeProvider, IOptions<StackViewerSettings> stackViewerSettings)
         {
             this.cache = cache;
             this.symbolServerArtifactRetriever = symbolServerArtifactRetriever;
+            this.sourceServerAuthorizationInformationProvider = sourceServerAuthorizationInformationProvider;
             this.cacheExpirationTimeProvider = cacheExpirationTimeProvider;
             this.stackViewerSettings = stackViewerSettings;
         }
@@ -39,7 +42,7 @@ namespace Microsoft.BPerf.StackViewer
                 if (!this.cache.TryGetValue(model.Filename, out IDeserializedData data))
                 {
                     var cacheEntryOptions = new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove).RegisterPostEvictionCallback(callback: EvictionCallback, state: this).SetSlidingExpiration(this.cacheExpirationTimeProvider.Expiration);
-                    data = new DeserializedData(model.Filename, model.LocationType, this.symbolServerArtifactRetriever, this.stackViewerSettings.Value.TemporaryDataFileDownloadLocation);
+                    data = new DeserializedData(model.Filename, model.LocationType, this.sourceServerAuthorizationInformationProvider, this.symbolServerArtifactRetriever, this.stackViewerSettings.Value.TemporaryDataFileDownloadLocation);
                     this.cache.Set(model.Filename, data, cacheEntryOptions);
                     CacheMonitorEventSource.Logger.CacheEntryAdded(Environment.MachineName, model.Filename);
                 }

@@ -767,7 +767,7 @@ namespace Microsoft.BPerf.StackInformation.Etw
                 string methodName = ReadWideNullTerminatedString(ref data);
                 string methodSignature = ReadWideNullTerminatedString(ref data);
 
-                var methodInfo = new ManagedMethodInfo(methodToken, methodId, moduleId, methodStartAddress, methodStartAddress + methodSize, methodNamespace + "." + methodName + methodSignature);
+                var methodInfo = new ManagedMethodInfo(methodToken, methodId, moduleId, methodStartAddress, methodStartAddress + methodSize, methodNamespace + "." + methodName + methodSignature.Substring(methodSignature.IndexOf('(')));
 
                 uint pid = eventRecord->ProcessId;
                 if (!this.MethodLoadMap.TryGetValue(pid, out List<ManagedMethodInfo> methodList))

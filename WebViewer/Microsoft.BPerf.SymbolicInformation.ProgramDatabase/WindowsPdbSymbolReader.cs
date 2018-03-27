@@ -40,7 +40,26 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
                 return null;
             }
 
-            dataSource.getStreamSize("srcsrv", out var len);
+            dataSource.getStreamSize("srcsrv", out var srcSrvLen);
+            dataSource.getStreamSize("sourcelink", out var sourceLinkLen);
+
+            var sourceIndexKind = SourceKind.None;
+
+            string streamName = string.Empty;
+            uint len = 0;
+
+            if (sourceLinkLen > 0)
+            {
+                len = sourceLinkLen;
+                streamName = "sourcelink";
+                sourceIndexKind = SourceKind.SourceLink;
+            }
+            else if (srcSrvLen > 0)
+            {
+                len = srcSrvLen;
+                streamName = "srcsrv";
+                sourceIndexKind = SourceKind.SrcSrv;
+            }
 
             string srcSrvString = null;
             if (len > 0)
@@ -50,13 +69,13 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
                 {
                     fixed (byte* bufferPtr = buffer)
                     {
-                        dataSource.getStreamRawData("srcsrv", len, out *bufferPtr);
+                        dataSource.getStreamRawData(streamName, len, out *bufferPtr);
                         srcSrvString = Encoding.UTF8.GetString(buffer);
                     }
                 }
             }
 
-            var sourceFile = new SourceFile(sourceLoc.sourceFile.fileName, len == 0 ? SourceKind.Indexed : SourceKind.None, srcSrvString); // we should support embedded
+            var sourceFile = new SourceFile(sourceLoc.sourceFile.fileName, sourceIndexKind, srcSrvString); // we should support embedded
             var lineNum = (int)sourceLoc.lineNumber;
 
             return new SourceLocation(sourceFile, lineNum);
@@ -81,7 +100,26 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
                 return null;
             }
 
-            dataSource.getStreamSize("srcsrv", out var len);
+            dataSource.getStreamSize("srcsrv", out var srcSrvLen);
+            dataSource.getStreamSize("sourcelink", out var sourceLinkLen);
+
+            var sourceIndexKind = SourceKind.None;
+
+            string streamName = string.Empty;
+            uint len = 0;
+
+            if (sourceLinkLen > 0)
+            {
+                len = sourceLinkLen;
+                streamName = "sourcelink";
+                sourceIndexKind = SourceKind.SourceLink;
+            }
+            else if (srcSrvLen > 0)
+            {
+                len = srcSrvLen;
+                streamName = "srcsrv";
+                sourceIndexKind = SourceKind.SrcSrv;
+            }
 
             string srcSrvString = null;
             if (len > 0)
@@ -91,13 +129,13 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
                 {
                     fixed (byte* bufferPtr = buffer)
                     {
-                        dataSource.getStreamRawData("srcsrv", len, out *bufferPtr);
+                        dataSource.getStreamRawData(streamName, len, out *bufferPtr);
                         srcSrvString = Encoding.UTF8.GetString(buffer);
                     }
                 }
             }
 
-            var sourceFile = new SourceFile(sourceLoc.sourceFile.fileName, len == 0 ? SourceKind.Indexed : SourceKind.None, srcSrvString); // we should support embedded
+            var sourceFile = new SourceFile(sourceLoc.sourceFile.fileName, sourceIndexKind, srcSrvString); // we should support embedded
 
             int lineNum;
 

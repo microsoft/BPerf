@@ -143,27 +143,20 @@ namespace Microsoft.BPerf.SymbolicInformation.ProgramDatabase
             return dbgId;
         }
 
-        private static bool IsValidPdb(string pdbPath, Guid signature, uint age)
+        private static bool IsValidPdb(string pdbPath, Guid incomingSignature, uint incomingAge)
         {
-            // otherwise we'll try to load DIA on non Windows
-            if (File.Exists(pdbPath) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            try
             {
                 var dataSource = DiaLoader.GetDiaSourceObject();
-                var local = signature;
-
-                try
-                {
-                    dataSource.loadAndValidateDataFromPdb(pdbPath, ref local, 0x53445352, age);
-                }
-                catch (COMException)
-                {
-                    return false;
-                }
-
-                return true;
+                var local = incomingSignature;
+                dataSource.loadAndValidateDataFromPdb(pdbPath, ref local, 0x53445352, incomingAge);
+            }
+            catch (COMException)
+            {
+                return false;
             }
 
-            return false;
+            return true;
         }
 
         private static bool IsValidPortablePdb(string pdbPath, Guid signature)

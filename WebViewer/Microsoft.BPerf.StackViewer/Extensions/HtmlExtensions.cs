@@ -23,18 +23,17 @@ namespace Microsoft.BPerf.StackViewer
             UriBuilder uriBuilder = new UriBuilder(urlHelper.RouteUrl(routeName, routeValues, request.Scheme));
 
             var str = uriBuilder.ToString();
+            str = str.Substring(str.IndexOf('/', str.IndexOf('/', str.IndexOf('/') + 1) + 1));
 
             foreach (var p in request.Query)
             {
-                if (string.Equals(p.Key, "path", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(p.Key, "path", StringComparison.OrdinalIgnoreCase) || string.Equals(p.Key, "name", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
                 str = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(str, p.Key, p.Value);
             }
-
-            str = str.Substring(str.IndexOf('/', str.IndexOf('/', str.IndexOf('/') + 1) + 1));
 
             return new HtmlString("<a href=\"" + str + "\">" + linkText + "</a>");
         }
@@ -49,7 +48,7 @@ namespace Microsoft.BPerf.StackViewer
 
             foreach (var p in request.Query)
             {
-                if (string.Equals(p.Key, "path", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(p.Key, "path", StringComparison.OrdinalIgnoreCase) || string.Equals(p.Key, "name", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
