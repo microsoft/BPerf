@@ -14,7 +14,7 @@
       <Output TaskParameter="ConsoleOutput" PropertyName="LatestCommit" />
     </Exec>
 
-    <WriteLinesToFile File="$(BaseIntermediateOutputPath)source_link.json" Overwrite="true" Lines='{"documents": { "$(SourceLinkRoot)\\*" : "https://raw.githubusercontent.com/Microsoft/BPerf/$(LatestCommit)/*" }}' />
+    <WriteLinesToFile File="$(BaseIntermediateOutputPath)source_link.json" Overwrite="true" Lines='{"documents": { "$(SourceLinkRoot)\\*" : "https://raw.githubusercontent.com/Microsoft/BPerf/$(LatestCommit)/WebViewer/*" }}' />
   </Target>
 
 </Project>
