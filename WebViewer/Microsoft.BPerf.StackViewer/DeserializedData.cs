@@ -12,17 +12,12 @@ namespace Microsoft.BPerf.StackViewer
     using System.Threading.Tasks;
     using Microsoft.BPerf.StackInformation.Abstractions;
     using Microsoft.BPerf.StackInformation.Etw;
-    using Microsoft.BPerf.SymbolServer.Interfaces;
 
     public sealed class DeserializedData : IDeserializedData
     {
         private readonly string uri;
 
         private readonly FileLocationType locationType;
-
-        private readonly ISourceServerAuthorizationInformationProvider sourceServerAuthorizationInformationProvider;
-
-        private readonly ISymbolServerArtifactRetriever symbolServerArtifactRetriever;
 
         private readonly string tempDownloadLocation;
 
@@ -36,14 +31,12 @@ namespace Microsoft.BPerf.StackViewer
 
         private int initialized;
 
-        private EtwDeserializer deserializer;
+        private TraceLogEtwDeserializer deserializer;
 
-        public DeserializedData(string uri, FileLocationType locationType, ISourceServerAuthorizationInformationProvider sourceServerAuthorizationInformationProvider, ISymbolServerArtifactRetriever symbolServerArtifactRetriever, string tempDownloadLocation)
+        public DeserializedData(string uri, FileLocationType locationType, string tempDownloadLocation)
         {
             this.uri = uri;
             this.locationType = locationType;
-            this.sourceServerAuthorizationInformationProvider = sourceServerAuthorizationInformationProvider;
-            this.symbolServerArtifactRetriever = symbolServerArtifactRetriever;
             this.tempDownloadLocation = tempDownloadLocation;
         }
 
@@ -61,7 +54,7 @@ namespace Microsoft.BPerf.StackViewer
             {
                 if (!this.callTreeDataCache.TryGetValue(model, out var value))
                 {
-                    value = new CallTreeData(this.symbolServerArtifactRetriever, this.sourceServerAuthorizationInformationProvider, this.deserializer, model);
+                    value = new CallTreeData(this.deserializer.StackSource, model);
                     this.callTreeDataCache.Add(model, value);
                 }
 
@@ -116,24 +109,16 @@ namespace Microsoft.BPerf.StackViewer
 
                 var filePath = this.locationType == FileLocationType.Url ? await this.DownloadFile(this.uri) : this.uri;
 
-                this.deserializer = new EtwDeserializer(filePath);
+                this.deserializer = new TraceLogEtwDeserializer(filePath);
 
-                foreach (var pair in this.deserializer.EventStacks)
+                foreach (var pair in this.deserializer.EventStats)
                 {
-                    this.stackEventTypes.Add(new StackEventTypeInfo(pair.Key, pair.Value.EventName, pair.Value.SampleIndices.Count));
+                    this.stackEventTypes.Add(new StackEventTypeInfo(pair.Key, pair.Value.EventName, pair.Value.Count, pair.Value.StackCount));
                 }
 
-                foreach (var pair in this.deserializer.ImageLoadMap.OrderBy(t => t.Value.Sum(y => y.InstructionPointers.Count)).Reverse())
+                foreach (var pair in this.deserializer.TraceProcesses.OrderByDescending(t => t.CPUMSec))
                 {
-                    long total = 0;
-                    foreach (var image in pair.Value)
-                    {
-                        total += image.InstructionPointers.Count;
-                    }
-
-                    this.processList.Add(this.deserializer.ProcessIdToNameMap.TryGetValue(pair.Key, out var processName)
-                        ? new ProcessInfo(processName, pair.Key, total)
-                        : new ProcessInfo($"Process {pair.Key}", pair.Key, total));
+                    this.processList.Add(new ProcessInfo(pair.Name + $"({pair.ProcessID})", (int)pair.ProcessIndex, pair.CPUMSec));
                 }
 
                 this.initialized = 1;

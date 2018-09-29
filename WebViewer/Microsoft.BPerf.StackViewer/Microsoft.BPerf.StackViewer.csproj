@@ -24,7 +24,6 @@
     <ProjectReference Include="..\Microsoft.BPerf.SymbolicInformation.Interfaces\Microsoft.BPerf.SymbolicInformation.Interfaces.csproj" />
     <ProjectReference Include="..\Microsoft.BPerf.SymbolicInformation.ProgramDatabase\Microsoft.BPerf.SymbolicInformation.ProgramDatabase.csproj" />
     <ProjectReference Include="..\Microsoft.BPerf.SymbolServer.Interfaces\Microsoft.BPerf.SymbolServer.Interfaces.csproj" />
-    <ProjectReference Include="..\Microsoft.Diagnostics.Tracing.Stacks\Microsoft.Diagnostics.Tracing.Stacks.csproj" />
   </ItemGroup>
 
   <ItemGroup>

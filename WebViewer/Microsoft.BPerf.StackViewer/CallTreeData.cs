@@ -5,20 +5,14 @@ namespace Microsoft.BPerf.StackViewer
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using global::Diagnostics.Tracing.StackSources;
-    using Microsoft.BPerf.ModuleInformation.Abstractions;
     using Microsoft.BPerf.StackAggregation;
-    using Microsoft.BPerf.StackInformation.Etw;
-    using Microsoft.BPerf.SymbolicInformation.ProgramDatabase;
-    using Microsoft.BPerf.SymbolServer.Interfaces;
     using Microsoft.Diagnostics.Tracing.Stacks;
-    using Newtonsoft.Json.Linq;
 
     public sealed class CallTreeData : ICallTreeData
     {
@@ -32,11 +26,7 @@ namespace Microsoft.BPerf.StackViewer
 
         private readonly object lockobj = new object();
 
-        private readonly ISymbolServerArtifactRetriever symbolServerArtifactRetriever;
-
-        private readonly ISourceServerAuthorizationInformationProvider sourceServerInformationProvider;
-
-        private readonly EtwDeserializer deserializer;
+        private readonly GenericStackSource stackSource;
 
         private readonly StackViewerModel model;
 
@@ -44,11 +34,9 @@ namespace Microsoft.BPerf.StackViewer
 
         private CallTree callTree;
 
-        public CallTreeData(ISymbolServerArtifactRetriever symbolServerArtifactRetriever, ISourceServerAuthorizationInformationProvider sourceServerInformationProvider, EtwDeserializer deserializer, StackViewerModel model)
+        public CallTreeData(GenericStackSource stackSource, StackViewerModel model)
         {
-            this.symbolServerArtifactRetriever = symbolServerArtifactRetriever;
-            this.sourceServerInformationProvider = sourceServerInformationProvider;
-            this.deserializer = deserializer;
+            this.stackSource = stackSource;
             this.model = model;
         }
 
@@ -63,21 +51,19 @@ namespace Microsoft.BPerf.StackViewer
                     CallTreeDataEventSource.Log.NodeCacheHit(name);
                     return new TreeNode(this.nodeNameCache[name]);
                 }
-                else
-                {
-                    foreach (var node in this.callTree.ByID)
-                    {
-                        if (node.Name == name)
-                        {
-                            this.nodeNameCache.Add(name, node);
-                            CallTreeDataEventSource.Log.NodeCacheMisss(name);
-                            return new TreeNode(node);
-                        }
-                    }
 
-                    CallTreeDataEventSource.Log.NodeCacheNotFound(name);
-                    return null;
+                foreach (var node in this.callTree.ByID)
+                {
+                    if (node.Name == name)
+                    {
+                        this.nodeNameCache.Add(name, node);
+                        CallTreeDataEventSource.Log.NodeCacheMisss(name);
+                        return new TreeNode(node);
+                    }
                 }
+
+                CallTreeDataEventSource.Log.NodeCacheNotFound(name);
+                return null;
             }
         }
 
@@ -213,52 +199,32 @@ namespace Microsoft.BPerf.StackViewer
             if (sourceLocation != null)
             {
                 var buildTimePath = sourceLocation.SourceFile.BuildTimeFilePath;
-                var srcSrvString = sourceLocation.SourceFile.SrcSrvString;
+                var srcSrvString = sourceLocation.SourceFile.GetSourceFile();
 
-                // TODO: src srv stream needs more support, also talk to VS folks and see how they do SourceLink
-                if (srcSrvString != null)
+                var lines = File.ReadAllLines(sourceLocation.SourceFile.GetSourceFile());
+
+                var list = new List<LineInformation>();
+
+                int i = 1;
+                foreach (var line in lines)
                 {
-                    var doc = JObject.Parse(srcSrvString)["documents"].ToObject<Dictionary<string, string>>().First();
-                    string urlPath = doc.Value.Replace("*", buildTimePath.Replace(doc.Key.Replace("*", string.Empty), string.Empty));
-
-                    var client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
+                    var li = new LineInformation
                     {
-                        BaseAddress = new Uri(urlPath)
+                        Line = line,
+                        LineNumber = i++
                     };
 
-                    var authorizationHeader = this.sourceServerInformationProvider.GetAuthorizationHeaderValue(urlPath);
-                    if (!string.IsNullOrEmpty(authorizationHeader))
-                    {
-                        client.DefaultRequestHeaders.Add("Authorization", authorizationHeader);
-                    }
-
-                    var result = await client.GetStringAsync(urlPath);
-
-                    var lines = result.Split('\n');
-
-                    var list = new List<LineInformation>();
-
-                    int i = 1;
-                    foreach (var line in lines)
-                    {
-                        var li = new LineInformation
-                        {
-                            Line = line,
-                            LineNumber = i++
-                        };
-
-                        list.Add(li);
-                    }
-
-                    var si = new SourceInformation
-                    {
-                        BuildTimeFilePath = buildTimePath,
-                        Lines = list,
-                        Summary = new List<LineInformation> { new LineInformation { LineNumber = sourceLocation.LineNumber, Metric = retVal[index] } }
-                    };
-
-                    return si;
+                    list.Add(li);
                 }
+
+                var si = new SourceInformation
+                {
+                    BuildTimeFilePath = buildTimePath,
+                    Lines = list,
+                    Summary = new List<LineInformation> { new LineInformation { LineNumber = sourceLocation.LineNumber, Metric = retVal[index] } }
+                };
+
+                return si;
             }
 
             return null; // TODO: need to implement the local case i.e. this is the build machine
@@ -283,38 +249,6 @@ namespace Microsoft.BPerf.StackViewer
                     return;
                 }
 
-                var pid = uint.Parse(this.model.Pid);
-                var symbolProvider = new TracePdbSymbolReaderProvider(this.symbolServerArtifactRetriever);
-
-                if (this.deserializer.ImageLoadMap.TryGetValue(pid, out var images))
-                {
-                    int total = 0;
-                    int count = 0;
-                    foreach (var image in images)
-                    {
-                        count++;
-                        total += image.InstructionPointers.Count;
-                    }
-
-                    var pdbLookupImageList = new List<ImageInfo>(count);
-                    var ftotal = (float)total;
-                    foreach (var image in images)
-                    {
-                        if ((image.InstructionPointers.Count / ftotal) * 100 >= 1.0)
-                        {
-                            pdbLookupImageList.Add(image);
-                        }
-                    }
-
-                    foreach (var image in pdbLookupImageList)
-                    {
-                        if (this.deserializer.ImageToDebugInfoMap.TryGetValue(new ProcessImageId(pid, image.Begin), out var dbgId))
-                        {
-                            await symbolProvider.GetSymbolReader(image.FilePath, dbgId.Signature, dbgId.Age, dbgId.Filename);
-                        }
-                    }
-                }
-
                 var filterParams = new FilterParams
                 {
                     StartTimeRelativeMSec = this.model.Start,
@@ -327,34 +261,10 @@ namespace Microsoft.BPerf.StackViewer
                     Name = "NoName"
                 };
 
-                var stackType = int.Parse(this.model.StackType);
-                if (!this.deserializer.EventStacks.TryGetValue(stackType, out var stackEventType))
-                {
-                    throw new ArgumentException();
-                }
-
-                var instructionPointerDecoder = new InstructionPointerToSymbolicNameProvider(this.deserializer, symbolProvider);
-                var stackSource = new GenericStackSource(
-                    this.deserializer,
-                    instructionPointerDecoder,
-                    callback =>
-                    {
-                        var sampleSource = this.deserializer;
-                        var samples = stackEventType.SampleIndices;
-                        foreach (var s in samples)
-                        {
-                            var sample = sampleSource.Samples[s];
-                            if (sample.Scenario == pid)
-                            {
-                                callback(sampleSource.Samples[s]);
-                            }
-                        }
-                    });
-
-                var ss = new FilterStackSource(filterParams, stackSource, ScalingPolicyKind.TimeMetric);
+                var ss = new FilterStackSource(filterParams, this.stackSource, ScalingPolicyKind.TimeMetric);
 
                 double startTimeRelativeMsec = double.TryParse(filterParams.StartTimeRelativeMSec, out startTimeRelativeMsec) ? Math.Max(startTimeRelativeMsec, 0.0) : 0.0;
-                double endTimeRelativeMsec = double.TryParse(filterParams.EndTimeRelativeMSec, out endTimeRelativeMsec) ? Math.Min(endTimeRelativeMsec, ss.SampleTimeRelativeMSecLimit) : ss.SampleTimeRelativeMSecLimit;
+                double endTimeRelativeMsec = double.TryParse(filterParams.EndTimeRelativeMSec, out endTimeRelativeMsec) ? Math.Min(endTimeRelativeMsec, this.stackSource.SampleTimeRelativeMSecLimit) : this.stackSource.SampleTimeRelativeMSecLimit;
 
                 this.callTree = new CallTree(ScalingPolicyKind.TimeMetric);
                 this.callTree.TimeHistogramController = new TimeHistogramController(this.callTree, startTimeRelativeMsec, endTimeRelativeMsec);

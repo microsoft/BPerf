@@ -5,17 +5,17 @@ namespace Microsoft.BPerf.StackViewer
 {
     public sealed class ProcessInfo
     {
-        public ProcessInfo(string processName, uint pid, long samplesCount)
+        public ProcessInfo(string processName, int pid, float cpumsec)
         {
             this.Name = processName;
             this.Id = pid;
-            this.SamplesCount = samplesCount;
+            this.CPUMSec = cpumsec;
         }
 
         public string Name { get; }
 
-        public uint Id { get; }
+        public int Id { get; }
 
-        public long SamplesCount { get; }
+        public float CPUMSec { get; }
     }
 }

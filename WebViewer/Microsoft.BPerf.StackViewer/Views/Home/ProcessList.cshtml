@@ -39,8 +39,8 @@
     @foreach (var process in this.Model.ProcessList)
     {
         <tr>
-            <td><a href="/ui/stackviewer/summary?filename=@this.Model.Filename&stacktype=@this.Model.StackType&pid=@process.Id">@process.Name (@process.Id)</a></td>
-            <td>@process.SamplesCount</td>
+            <td><a href="/ui/stackviewer/summary?filename=@this.Model.Filename&stacktype=@this.Model.StackType&pid=@process.Id">@process.Name</a></td>
+            <td>@process.CPUMSec</td>
         </tr>
     }
     </tbody>
