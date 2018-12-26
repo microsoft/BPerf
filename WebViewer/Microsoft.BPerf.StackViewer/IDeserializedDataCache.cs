@@ -5,7 +5,7 @@ namespace Microsoft.BPerf.StackViewer
 {
     public interface IDeserializedDataCache
     {
-        IDeserializedData GetData(StackViewerModel model);
+        IDeserializedData GetData(string cacheKey);
 
         void ClearAllCacheEntries();
     }

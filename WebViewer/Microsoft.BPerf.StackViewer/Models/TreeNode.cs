@@ -1,10 +1,14 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace Microsoft.BPerf.StackViewer
 {
     using System.Collections.Generic;
     using System.Runtime.Serialization;
+    using System.Text;
+    using Microsoft.AspNetCore.WebUtilities;
     using Microsoft.Diagnostics.Tracing.Stacks;
 
     [DataContract]
@@ -23,10 +27,8 @@ namespace Microsoft.BPerf.StackViewer
                 ThrowHelper.ThrowArgumentNullException(nameof(template));
             }
 
-            this.Id = template.Name;
-            this.ContextId = this.Id;
-            this.ParentContextId = string.Empty;
-            this.ParentId = string.Empty;
+            this.Base64EncodedId = Base64UrlTextEncoder.Encode(Encoding.UTF8.GetBytes(template.Name));
+            this.Path = string.Empty;
             this.Name = template.Name;
             this.InclusiveMetric = template.InclusiveMetric;
             this.InclusiveCount = template.InclusiveCount;
@@ -35,11 +37,11 @@ namespace Microsoft.BPerf.StackViewer
             this.ExclusiveFoldedMetric = template.ExclusiveFoldedMetric;
             this.ExclusiveFoldedCount = template.ExclusiveFoldedCount;
             this.InclusiveMetricByTimeString = template.InclusiveMetricByTimeString;
-            this.FirstTimeRelativeMSec = template.FirstTimeRelativeMSec;
-            this.LastTimeRelativeMSec = template.LastTimeRelativeMSec;
-            this.InclusiveMetricPercent = template.InclusiveMetric * 100 / template.CallTree.PercentageBasis;
-            this.ExclusiveMetricPercent = template.ExclusiveMetric * 100 / template.CallTree.PercentageBasis;
-            this.ExclusiveFoldedMetricPercent = template.ExclusiveFoldedMetric * 100 / template.CallTree.PercentageBasis;
+            this.FirstTimeRelativeMSec = template.FirstTimeRelativeMSec.ToString("N3");
+            this.LastTimeRelativeMSec = template.LastTimeRelativeMSec.ToString("N3");
+            this.InclusiveMetricPercent = (template.InclusiveMetric * 100 / template.CallTree.PercentageBasis).ToString("N2");
+            this.ExclusiveMetricPercent = (template.ExclusiveMetric * 100 / template.CallTree.PercentageBasis).ToString("N2");
+            this.ExclusiveFoldedMetricPercent = (template.ExclusiveFoldedMetric * 100 / template.CallTree.PercentageBasis).ToString("N2");
             this.HasChildren = false;
             this.BackingNode = template;
         }
@@ -51,10 +53,8 @@ namespace Microsoft.BPerf.StackViewer
                 ThrowHelper.ThrowArgumentNullException(nameof(template));
             }
 
-            this.ParentContextId = string.Empty;
-            this.Id = template.Name;
-            this.ParentId = string.Empty;
-            this.ContextId = this.Id;
+            this.Path = string.Empty;
+            this.Base64EncodedId = Base64UrlTextEncoder.Encode(Encoding.UTF8.GetBytes(template.Name));
             this.Name = template.Name;
             this.InclusiveMetric = template.InclusiveMetric;
             this.InclusiveCount = template.InclusiveCount;
@@ -63,11 +63,11 @@ namespace Microsoft.BPerf.StackViewer
             this.ExclusiveFoldedMetric = template.ExclusiveFoldedMetric;
             this.ExclusiveFoldedCount = template.ExclusiveFoldedCount;
             this.InclusiveMetricByTimeString = template.InclusiveMetricByTimeString;
-            this.FirstTimeRelativeMSec = template.FirstTimeRelativeMSec;
-            this.LastTimeRelativeMSec = template.LastTimeRelativeMSec;
-            this.InclusiveMetricPercent = template.InclusiveMetric * 100 / template.CallTree.PercentageBasis;
-            this.ExclusiveMetricPercent = template.ExclusiveMetric * 100 / template.CallTree.PercentageBasis;
-            this.ExclusiveFoldedMetricPercent = template.ExclusiveFoldedMetric * 100 / template.CallTree.PercentageBasis;
+            this.FirstTimeRelativeMSec = template.FirstTimeRelativeMSec.ToString("N3");
+            this.LastTimeRelativeMSec = template.LastTimeRelativeMSec.ToString("N3");
+            this.InclusiveMetricPercent = (template.InclusiveMetric * 100 / template.CallTree.PercentageBasis).ToString("N2");
+            this.ExclusiveMetricPercent = (template.ExclusiveMetric * 100 / template.CallTree.PercentageBasis).ToString("N2");
+            this.ExclusiveFoldedMetricPercent = (template.ExclusiveFoldedMetric * 100 / template.CallTree.PercentageBasis).ToString("N2");
             this.HasChildren = template.HasChildren;
             this.BackingNode = template;
             this.backingNodeWithChildren = template;
@@ -80,16 +80,10 @@ namespace Microsoft.BPerf.StackViewer
         public CallTreeNodeBase BackingNode { get; }
 
         [DataMember]
-        public string ParentContextId { get; set; }
+        public string Path { get; set; }
 
         [DataMember]
-        public string ContextId { get; set; }
-
-        [DataMember]
-        public string ParentId { get; set; }
-
-        [DataMember]
-        public string Id { get; set; }
+        public string Base64EncodedId { get; set; }
 
         [DataMember]
         public string Name { get; set; }
@@ -113,22 +107,22 @@ namespace Microsoft.BPerf.StackViewer
         public float ExclusiveFoldedCount { get; set; }
 
         [DataMember]
-        public float InclusiveMetricPercent { get; set; }
+        public string InclusiveMetricPercent { get; set; }
 
         [DataMember]
-        public float ExclusiveMetricPercent { get; set; }
+        public string ExclusiveMetricPercent { get; set; }
 
         [DataMember]
-        public float ExclusiveFoldedMetricPercent { get; set; }
+        public string ExclusiveFoldedMetricPercent { get; set; }
 
         [DataMember]
         public string InclusiveMetricByTimeString { get; set; }
 
         [DataMember]
-        public double FirstTimeRelativeMSec { get; set; }
+        public string FirstTimeRelativeMSec { get; set; }
 
         [DataMember]
-        public double LastTimeRelativeMSec { get; set; }
+        public string LastTimeRelativeMSec { get; set; }
 
         [DataMember]
         public double DurationMSec { get; set; }
@@ -150,7 +144,10 @@ namespace Microsoft.BPerf.StackViewer
 
                         for (int i = 0; i < count; ++i)
                         {
-                            this.callees[i] = new TreeNode(backingNodeCallees[i]) { ContextId = this.ContextId + "/" + i, ParentContextId = this.ContextId, ParentId = this.Name }; // for example, 7105/0 .. 7105/N
+                            this.callees[i] = new TreeNode(backingNodeCallees[i])
+                            {
+                                Path = string.IsNullOrEmpty(this.Path) ? i.ToString() : this.Path + '-' + i,
+                            }; // for example, 7105/0 .. 7105/N
                         }
                     }
 

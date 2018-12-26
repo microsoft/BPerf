@@ -5,7 +5,8 @@ namespace Microsoft.BPerf.StackViewer
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using global::Diagnostics.Tracing.StackSources;
+    using Microsoft.BPerf.StackAggregation;
+    using Microsoft.BPerf.StackInformation.Etw;
 
     public interface IDeserializedData
     {
@@ -13,6 +14,8 @@ namespace Microsoft.BPerf.StackViewer
 
         ValueTask<List<ProcessInfo>> GetProcessListAsync();
 
-        ValueTask<ICallTreeData> GetCallTreeAsync(StackViewerModel model);
+        ValueTask<ICallTreeData> GetCallTreeAsync(StackViewerModel model, GenericStackSource stackSource = null);
+
+        ValueTask<List<EventData>> GetEvents(EventViewerModel model);
     }
 }

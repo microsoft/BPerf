@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -8,10 +8,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.BPerf.ModuleInformation.Abstractions\Microsoft.BPerf.ModuleInformation.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.BPerf.SymbolicInformation.Interfaces\Microsoft.BPerf.SymbolicInformation.Interfaces.csproj" />
-    <ProjectReference Include="..\Microsoft.Diagnostics.Tracing.Stacks\Microsoft.Diagnostics.Tracing.Stacks.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="2.0.32" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.0" />
   </ItemGroup>
 

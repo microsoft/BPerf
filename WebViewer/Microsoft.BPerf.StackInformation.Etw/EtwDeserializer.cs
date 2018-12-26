@@ -227,18 +227,19 @@ namespace Microsoft.BPerf.StackInformation.Etw
             }
 
             /* special process */
-            var pidZeroList = this.ImageLoadMap[0];
-
-            foreach (var frame in frames)
+            if (this.ImageLoadMap.TryGetValue(0, out var pidZeroList))
             {
-                var eip = frame.InstructionPointer;
-                var result = RangeBinarySearch(pidZeroList, eip);
-                if (result >= 0)
+                foreach (var frame in frames)
                 {
-                    // add eips encountered in other processes to this one.
-                    // we do this so when we lookup pdbs we have all eips
-                    // for these images
-                    pidZeroList[result].InstructionPointers.Add(eip);
+                    var eip = frame.InstructionPointer;
+                    var result = RangeBinarySearch(pidZeroList, eip);
+                    if (result >= 0)
+                    {
+                        // add eips encountered in other processes to this one.
+                        // we do this so when we lookup pdbs we have all eips
+                        // for these images
+                        pidZeroList[result].InstructionPointers.Add(eip);
+                    }
                 }
             }
 

@@ -3,18 +3,13 @@
 
 namespace Microsoft.BPerf.StackViewer
 {
-    using System.Collections.Generic;
+    using System.Text;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.BPerf.StackInformation.Abstractions;
+    using Microsoft.AspNetCore.WebUtilities;
 
-    public class StackViewerModel
+    public sealed class StackViewerModel
     {
-        public StackViewerModel(IHttpContextAccessor httpContextAccessor)
-            : this(httpContextAccessor.HttpContext)
-        {
-        }
-
-        internal StackViewerModel(HttpContext httpContext)
+        public StackViewerModel(HttpContext httpContext)
         {
             this.Filename = (string)httpContext.Request.Query["Filename"] ?? string.Empty;
             this.StackType = (string)httpContext.Request.Query["StackType"] ?? string.Empty;
@@ -26,17 +21,15 @@ namespace Microsoft.BPerf.StackViewer
             this.ExcPats = (string)httpContext.Request.Query["ExcPats"] ?? string.Empty;
             this.FoldPats = (string)httpContext.Request.Query["FoldPats"] ?? string.Empty;
             this.FoldPct = (string)httpContext.Request.Query["FoldPct"] ?? string.Empty;
+            this.DrillIntoKey = (string)httpContext.Request.Query["DrillIntoKey"] ?? string.Empty;
 
-            if (this.Filename.StartsWith("https") || this.Filename.StartsWith("http"))
-            {
-                this.LocationType = FileLocationType.Url;
-            }
-            else
-            {
-                this.LocationType = FileLocationType.LocalFile;
-            }
-
-            this.Location = this.Filename;
+            this.Filename = Encoding.UTF8.GetString(Base64UrlTextEncoder.Decode(this.Filename));
+            this.Start = Encoding.UTF8.GetString(Base64UrlTextEncoder.Decode(this.Start));
+            this.End = Encoding.UTF8.GetString(Base64UrlTextEncoder.Decode(this.End));
+            this.GroupPats = Encoding.UTF8.GetString(Base64UrlTextEncoder.Decode(this.GroupPats));
+            this.IncPats = Encoding.UTF8.GetString(Base64UrlTextEncoder.Decode(this.IncPats));
+            this.FoldPats = Encoding.UTF8.GetString(Base64UrlTextEncoder.Decode(this.FoldPats));
+            this.ExcPats = Encoding.UTF8.GetString(Base64UrlTextEncoder.Decode(this.ExcPats));
         }
 
         public string Filename { get; }
@@ -59,13 +52,11 @@ namespace Microsoft.BPerf.StackViewer
 
         public string FoldPct { get; }
 
-        public string Location { get; }
-
-        public FileLocationType LocationType { get; }
+        public string DrillIntoKey { get; private set; }
 
         public override string ToString()
         {
-            return $"pid={this.Pid}&stacktype={this.StackType}&filename={this.Filename}&start={this.Start}&end={this.End}&grouppats={this.GroupPats}&incpats={this.IncPats}&excpats={this.ExcPats}&foldpats={this.FoldPats}&foldpct={this.FoldPct}";
+            return $"pid={this.Pid}&stacktype={this.StackType}&filename={this.Filename}&start={this.Start}&end={this.End}&grouppats={this.GroupPats}&incpats={this.IncPats}&excpats={this.ExcPats}&foldpats={this.FoldPats}&foldpct={this.FoldPct}&drillIntoKey={this.DrillIntoKey}";
         }
 
         public override int GetHashCode()
@@ -106,6 +97,11 @@ namespace Microsoft.BPerf.StackViewer
             return this.Equals((StackViewerModel)obj);
         }
 
+        public void SetDrillIntoKey(string drillIntoKey)
+        {
+            this.DrillIntoKey = drillIntoKey;
+        }
+
         private bool Equals(StackViewerModel other)
         {
             return string.Equals(this.Filename, other.Filename) &&
@@ -117,7 +113,8 @@ namespace Microsoft.BPerf.StackViewer
                    string.Equals(this.IncPats, other.IncPats) &&
                    string.Equals(this.ExcPats, other.ExcPats) &&
                    string.Equals(this.FoldPats, other.FoldPats) &&
-                   string.Equals(this.FoldPct, other.FoldPct);
+                   string.Equals(this.FoldPct, other.FoldPct) &&
+                   string.Equals(this.DrillIntoKey, other.DrillIntoKey);
         }
     }
 }

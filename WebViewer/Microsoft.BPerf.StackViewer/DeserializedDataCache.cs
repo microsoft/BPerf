@@ -5,46 +5,42 @@ namespace Microsoft.BPerf.StackViewer
 {
     using System;
     using System.Diagnostics.Tracing;
-    using Microsoft.BPerf.SymbolServer.Interfaces;
+    using Microsoft.Diagnostics.Symbols;
     using Microsoft.Extensions.Caching.Memory;
-    using Microsoft.Extensions.Options;
 
     public class DeserializedDataCache : IDeserializedDataCache
     {
         private readonly CallTreeDataCache cache;
 
-        private readonly ISourceServerAuthorizationInformationProvider sourceServerAuthorizationInformationProvider;
-
-        private readonly ISymbolServerArtifactRetriever symbolServerArtifactRetriever;
-
         private readonly ICacheExpirationTimeProvider cacheExpirationTimeProvider;
 
-        private readonly IOptions<StackViewerSettings> stackViewerSettings;
+        private readonly SymbolReader symbolReader;
 
-        public DeserializedDataCache(CallTreeDataCache cache, ISymbolServerArtifactRetriever symbolServerArtifactRetriever, ISourceServerAuthorizationInformationProvider sourceServerAuthorizationInformationProvider, ICacheExpirationTimeProvider cacheExpirationTimeProvider, IOptions<StackViewerSettings> stackViewerSettings)
+        public DeserializedDataCache(CallTreeDataCache cache, ICacheExpirationTimeProvider cacheExpirationTimeProvider, SymbolReader symbolReader)
         {
             this.cache = cache;
-            this.symbolServerArtifactRetriever = symbolServerArtifactRetriever;
-            this.sourceServerAuthorizationInformationProvider = sourceServerAuthorizationInformationProvider;
             this.cacheExpirationTimeProvider = cacheExpirationTimeProvider;
-            this.stackViewerSettings = stackViewerSettings;
+            this.symbolReader = symbolReader;
         }
 
         public void ClearAllCacheEntries()
         {
-            this.cache.Compact(100);
+            lock (this.cache)
+            {
+                this.cache.Compact(100);
+            }
         }
 
-        public IDeserializedData GetData(StackViewerModel model)
+        public IDeserializedData GetData(string cacheKey)
         {
             lock (this.cache)
             {
-                if (!this.cache.TryGetValue(model.Filename, out IDeserializedData data))
+                if (!this.cache.TryGetValue(cacheKey, out IDeserializedData data))
                 {
                     var cacheEntryOptions = new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove).RegisterPostEvictionCallback(callback: EvictionCallback, state: this).SetSlidingExpiration(this.cacheExpirationTimeProvider.Expiration);
-                    data = new DeserializedData(model.Filename, model.LocationType, this.sourceServerAuthorizationInformationProvider, this.symbolServerArtifactRetriever, this.stackViewerSettings.Value.TemporaryDataFileDownloadLocation);
-                    this.cache.Set(model.Filename, data, cacheEntryOptions);
-                    CacheMonitorEventSource.Logger.CacheEntryAdded(Environment.MachineName, model.Filename);
+                    data = new DeserializedData(cacheKey, this.symbolReader);
+                    this.cache.Set(cacheKey, data, cacheEntryOptions);
+                    CacheMonitorEventSource.Logger.CacheEntryAdded(Environment.MachineName, cacheKey);
                 }
 
                 return data;

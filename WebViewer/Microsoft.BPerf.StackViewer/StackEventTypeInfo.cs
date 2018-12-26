@@ -5,11 +5,12 @@ namespace Microsoft.BPerf.StackViewer
 {
     public sealed class StackEventTypeInfo
     {
-        public StackEventTypeInfo(int eventId, string eventName, int eventCount)
+        public StackEventTypeInfo(int eventId, string eventName, int eventCount, int stackEventCount)
         {
             this.EventId = eventId;
             this.EventName = eventName;
             this.EventCount = eventCount;
+            this.StackEventCount = stackEventCount;
         }
 
         public int EventId { get; }
@@ -17,5 +18,7 @@ namespace Microsoft.BPerf.StackViewer
         public string EventName { get; }
 
         public int EventCount { get; }
+
+        public int StackEventCount { get; }
     }
 }

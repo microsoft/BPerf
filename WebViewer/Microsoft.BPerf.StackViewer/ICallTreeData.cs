@@ -5,6 +5,7 @@ namespace Microsoft.BPerf.StackViewer
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using Microsoft.Diagnostics.Tracing.Stacks;
 
     public interface ICallTreeData
     {
@@ -12,7 +13,7 @@ namespace Microsoft.BPerf.StackViewer
         ValueTask<TreeNode> GetNode(string name);
 
         // gets a node with a caller tree context and looks up the path
-        ValueTask<TreeNode> GetCallerTreeNode(string name, string path = "");
+        ValueTask<TreeNode> GetCallerTreeNode(string name, char sep, string path = "");
 
         // gets a node with a callee tree context and looks up the path
         ValueTask<TreeNode> GetCalleeTreeNode(string name, string path = "");
@@ -21,16 +22,18 @@ namespace Microsoft.BPerf.StackViewer
         ValueTask<List<TreeNode>> GetSummaryTree(int numNodes);
 
         // returns a flat caller tree given a node
-        ValueTask<TreeNode[]> GetCallerTree(string name);
+        ValueTask<TreeNode[]> GetCallerTree(string name, char sep);
 
         // returns a flat caller tree given a node and its context
-        ValueTask<TreeNode[]> GetCallerTree(string name, string path);
-
-        // returns a flat callee tree given a node
-        ValueTask<TreeNode[]> GetCalleeTree(string name);
+        ValueTask<TreeNode[]> GetCallerTree(string name, char sep, string path);
 
         // returns a flat callee tree given a node and its context
         ValueTask<TreeNode[]> GetCalleeTree(string name, string path);
+
+        // returns samples for Drill Into
+        ValueTask<StackSource> GetDrillIntoStackSource(bool exclusive, string name, char sep, string path);
+
+        bool LookupWarmSymbols(int minCount);
 
         ValueTask<SourceInformation> Source(TreeNode node);
     }

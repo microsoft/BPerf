@@ -3,20 +3,45 @@
 
 namespace Microsoft.BPerf.StackViewer
 {
+    using System;
     using System.IO;
-    using Microsoft.AspNetCore.Hosting;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Server.Kestrel.Core;
+    using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
+    using Microsoft.BPerf.StackViewer.Configuration;
+    using Microsoft.BPerf.StackViewer.Logging;
+    using Microsoft.QuickInject;
 
     public static class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
-                .Build();
+            TaskScheduler.UnobservedTaskException += (sender, e) =>
+            {
+                Console.WriteLine("Unobserved exception: {0}", e.Exception);
+            };
 
-            host.Run();
+            var container = new QuickInjectContainer();
+            var hostingEnvironment = new HostingEnvironment
+            {
+                ContentRootPath = Directory.GetCurrentDirectory()
+            };
+
+            var defaultEventSourceLoggerFactory = new DefaultEventSourceLoggerFactory();
+            var startup = new Startup();
+
+            startup.SetupQuickInjectContainer(container);
+            startup.Configure(null, hostingEnvironment);
+
+            var requestDelegate = new RequestDelegate(startup.HandleRequest);
+
+            var server = new KestrelServer(new KestrelServerOptionsConfig(container, 5000), new SocketTransportFactory(new SocketTransportOptionsConfig(), new ApplicationLifetime(), defaultEventSourceLoggerFactory), defaultEventSourceLoggerFactory);
+
+            await server.StartAsync(new HttpApplication(requestDelegate), CancellationToken.None);
+
+            Thread.Sleep(Timeout.Infinite);
         }
     }
 }

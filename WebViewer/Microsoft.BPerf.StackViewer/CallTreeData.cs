@@ -5,20 +5,15 @@ namespace Microsoft.BPerf.StackViewer
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using global::Diagnostics.Tracing.StackSources;
-    using Microsoft.BPerf.ModuleInformation.Abstractions;
     using Microsoft.BPerf.StackAggregation;
-    using Microsoft.BPerf.StackInformation.Etw;
-    using Microsoft.BPerf.SymbolicInformation.ProgramDatabase;
-    using Microsoft.BPerf.SymbolServer.Interfaces;
+    using Microsoft.Diagnostics.Symbols;
     using Microsoft.Diagnostics.Tracing.Stacks;
-    using Newtonsoft.Json.Linq;
 
     public sealed class CallTreeData : ICallTreeData
     {
@@ -30,33 +25,30 @@ namespace Microsoft.BPerf.StackViewer
 
         private readonly Dictionary<CallTreeNodeBase, TreeNode> calleeTreeCache = new Dictionary<CallTreeNodeBase, TreeNode>();
 
-        private readonly object lockobj = new object();
+        private readonly object lockObj = new object();
 
-        private readonly ISymbolServerArtifactRetriever symbolServerArtifactRetriever;
-
-        private readonly ISourceServerAuthorizationInformationProvider sourceServerInformationProvider;
-
-        private readonly EtwDeserializer deserializer;
+        private readonly GenericStackSource stackSource;
 
         private readonly StackViewerModel model;
+
+        private readonly SymbolReader symbolReader;
 
         private int initialized;
 
         private CallTree callTree;
 
-        public CallTreeData(ISymbolServerArtifactRetriever symbolServerArtifactRetriever, ISourceServerAuthorizationInformationProvider sourceServerInformationProvider, EtwDeserializer deserializer, StackViewerModel model)
+        public CallTreeData(GenericStackSource stackSource, StackViewerModel model, SymbolReader symbolReader)
         {
-            this.symbolServerArtifactRetriever = symbolServerArtifactRetriever;
-            this.sourceServerInformationProvider = sourceServerInformationProvider;
-            this.deserializer = deserializer;
+            this.stackSource = stackSource;
             this.model = model;
+            this.symbolReader = symbolReader;
         }
 
         public async ValueTask<TreeNode> GetNode(string name)
         {
             await this.EnsureInitialized();
 
-            lock (this.lockobj)
+            lock (this.lockObj)
             {
                 if (this.nodeNameCache.ContainsKey(name))
                 {
@@ -81,7 +73,7 @@ namespace Microsoft.BPerf.StackViewer
             }
         }
 
-        public async ValueTask<TreeNode> GetCallerTreeNode(string name, string path = "")
+        public async ValueTask<TreeNode> GetCallerTreeNode(string name, char sep, string path = "")
         {
             if (name == null)
             {
@@ -90,7 +82,7 @@ namespace Microsoft.BPerf.StackViewer
 
             var node = await this.GetNode(name);
 
-            lock (this.lockobj)
+            lock (this.lockObj)
             {
                 CallTreeNodeBase backingNode = node.BackingNode;
                 TreeNode callerTreeNode;
@@ -110,7 +102,7 @@ namespace Microsoft.BPerf.StackViewer
                     return callerTreeNode;
                 }
 
-                var pathArr = path.Split('/');
+                var pathArr = path.Split(sep);
                 var pathNodeRoot = callerTreeNode.Children[int.Parse(pathArr[0])];
 
                 for (int i = 1; i < pathArr.Length; ++i)
@@ -131,7 +123,7 @@ namespace Microsoft.BPerf.StackViewer
 
             var node = await this.GetNode(name);
 
-            lock (this.lockobj)
+            lock (this.lockObj)
             {
                 CallTreeNodeBase backingNode = node.BackingNode;
                 TreeNode calleeTreeNode;
@@ -163,15 +155,15 @@ namespace Microsoft.BPerf.StackViewer
             }
         }
 
-        public async ValueTask<TreeNode[]> GetCallerTree(string name)
+        public async ValueTask<TreeNode[]> GetCallerTree(string name, char sep)
         {
-            var node = await this.GetCallerTreeNode(name);
+            var node = await this.GetCallerTreeNode(name, sep);
             return node.Children;
         }
 
-        public async ValueTask<TreeNode[]> GetCallerTree(string name, string path)
+        public async ValueTask<TreeNode[]> GetCallerTree(string name, char sep, string path)
         {
-            var node = await this.GetCallerTreeNode(name, path);
+            var node = await this.GetCallerTreeNode(name, sep, path);
             return node.Children;
         }
 
@@ -202,6 +194,50 @@ namespace Microsoft.BPerf.StackViewer
             return summaryNodes;
         }
 
+        public async ValueTask<StackSource> GetDrillIntoStackSource(bool exclusive, string name, char sep, string path = "")
+        {
+            var node = await this.GetCallerTreeNode(name, sep, path);
+            var callTreeNode = node.BackingNode;
+
+            var originalStackSource = callTreeNode.CallTree.StackSource;
+            var drillIntoStackSource = new CopyStackSource(originalStackSource);
+
+            callTreeNode.GetSamples(exclusive, index =>
+            {
+                drillIntoStackSource.AddSample(originalStackSource.GetSampleByIndex(index));
+                return true;
+            });
+
+            return drillIntoStackSource;
+        }
+
+        public bool LookupWarmSymbols(int minCount)
+        {
+            StackSourceStacks rawSource = this.stackSource.BaseStackSource;
+            for (;;)
+            {
+                if (rawSource is TraceEventStackSource asTraceEventStackSource)
+                {
+                    asTraceEventStackSource.LookupWarmSymbols(minCount, this.symbolReader);
+                    return true;
+                }
+
+                if (rawSource is CopyStackSource asCopyStackSource)
+                {
+                    rawSource = asCopyStackSource.SourceStacks;
+                    continue;
+                }
+
+                if (rawSource is StackSource asStackSource && asStackSource != asStackSource.BaseStackSource)
+                {
+                    rawSource = asStackSource.BaseStackSource;
+                    continue;
+                }
+
+                return false;
+            }
+        }
+
         public async ValueTask<SourceInformation> Source(TreeNode node)
         {
             var index = this.GetSourceLocation(node.BackingNode, node.Name, out Dictionary<StackSourceFrameIndex, float> retVal);
@@ -213,52 +249,32 @@ namespace Microsoft.BPerf.StackViewer
             if (sourceLocation != null)
             {
                 var buildTimePath = sourceLocation.SourceFile.BuildTimeFilePath;
-                var srcSrvString = sourceLocation.SourceFile.SrcSrvString;
+                var srcSrvString = sourceLocation.SourceFile.GetSourceFile();
 
-                // TODO: src srv stream needs more support, also talk to VS folks and see how they do SourceLink
-                if (srcSrvString != null)
+                var lines = File.ReadAllLines(sourceLocation.SourceFile.GetSourceFile());
+
+                var list = new List<LineInformation>();
+                int i = 1;
+
+                foreach (var line in lines)
                 {
-                    var doc = JObject.Parse(srcSrvString)["documents"].ToObject<Dictionary<string, string>>().First();
-                    string urlPath = doc.Value.Replace("*", buildTimePath.Replace(doc.Key.Replace("*", string.Empty), string.Empty));
-
-                    var client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
+                    var li = new LineInformation
                     {
-                        BaseAddress = new Uri(urlPath)
+                        Line = line,
+                        LineNumber = i++
                     };
 
-                    var authorizationHeader = this.sourceServerInformationProvider.GetAuthorizationHeaderValue(urlPath);
-                    if (!string.IsNullOrEmpty(authorizationHeader))
-                    {
-                        client.DefaultRequestHeaders.Add("Authorization", authorizationHeader);
-                    }
-
-                    var result = await client.GetStringAsync(urlPath);
-
-                    var lines = result.Split('\n');
-
-                    var list = new List<LineInformation>();
-
-                    int i = 1;
-                    foreach (var line in lines)
-                    {
-                        var li = new LineInformation
-                        {
-                            Line = line,
-                            LineNumber = i++
-                        };
-
-                        list.Add(li);
-                    }
-
-                    var si = new SourceInformation
-                    {
-                        BuildTimeFilePath = buildTimePath,
-                        Lines = list,
-                        Summary = new List<LineInformation> { new LineInformation { LineNumber = sourceLocation.LineNumber, Metric = retVal[index] } }
-                    };
-
-                    return si;
+                    list.Add(li);
                 }
+
+                var si = new SourceInformation
+                {
+                    BuildTimeFilePath = buildTimePath,
+                    Lines = list,
+                    Summary = new List<LineInformation> { new LineInformation { LineNumber = sourceLocation.LineNumber, Metric = retVal[index] } }
+                };
+
+                return si;
             }
 
             return null; // TODO: need to implement the local case i.e. this is the build machine
@@ -283,38 +299,6 @@ namespace Microsoft.BPerf.StackViewer
                     return;
                 }
 
-                var pid = uint.Parse(this.model.Pid);
-                var symbolProvider = new TracePdbSymbolReaderProvider(this.symbolServerArtifactRetriever);
-
-                if (this.deserializer.ImageLoadMap.TryGetValue(pid, out var images))
-                {
-                    int total = 0;
-                    int count = 0;
-                    foreach (var image in images)
-                    {
-                        count++;
-                        total += image.InstructionPointers.Count;
-                    }
-
-                    var pdbLookupImageList = new List<ImageInfo>(count);
-                    var ftotal = (float)total;
-                    foreach (var image in images)
-                    {
-                        if ((image.InstructionPointers.Count / ftotal) * 100 >= 1.0)
-                        {
-                            pdbLookupImageList.Add(image);
-                        }
-                    }
-
-                    foreach (var image in pdbLookupImageList)
-                    {
-                        if (this.deserializer.ImageToDebugInfoMap.TryGetValue(new ProcessImageId(pid, image.Begin), out var dbgId))
-                        {
-                            await symbolProvider.GetSymbolReader(image.FilePath, dbgId.Signature, dbgId.Age, dbgId.Filename);
-                        }
-                    }
-                }
-
                 var filterParams = new FilterParams
                 {
                     StartTimeRelativeMSec = this.model.Start,
@@ -327,34 +311,10 @@ namespace Microsoft.BPerf.StackViewer
                     Name = "NoName"
                 };
 
-                var stackType = int.Parse(this.model.StackType);
-                if (!this.deserializer.EventStacks.TryGetValue(stackType, out var stackEventType))
-                {
-                    throw new ArgumentException();
-                }
-
-                var instructionPointerDecoder = new InstructionPointerToSymbolicNameProvider(this.deserializer, symbolProvider);
-                var stackSource = new GenericStackSource(
-                    this.deserializer,
-                    instructionPointerDecoder,
-                    callback =>
-                    {
-                        var sampleSource = this.deserializer;
-                        var samples = stackEventType.SampleIndices;
-                        foreach (var s in samples)
-                        {
-                            var sample = sampleSource.Samples[s];
-                            if (sample.Scenario == pid)
-                            {
-                                callback(sampleSource.Samples[s]);
-                            }
-                        }
-                    });
-
-                var ss = new FilterStackSource(filterParams, stackSource, ScalingPolicyKind.TimeMetric);
+                var ss = new FilterStackSource(filterParams, this.stackSource, ScalingPolicyKind.TimeMetric);
 
                 double startTimeRelativeMsec = double.TryParse(filterParams.StartTimeRelativeMSec, out startTimeRelativeMsec) ? Math.Max(startTimeRelativeMsec, 0.0) : 0.0;
-                double endTimeRelativeMsec = double.TryParse(filterParams.EndTimeRelativeMSec, out endTimeRelativeMsec) ? Math.Min(endTimeRelativeMsec, ss.SampleTimeRelativeMSecLimit) : ss.SampleTimeRelativeMSecLimit;
+                double endTimeRelativeMsec = double.TryParse(filterParams.EndTimeRelativeMSec, out endTimeRelativeMsec) ? Math.Min(endTimeRelativeMsec, this.stackSource.SampleTimeRelativeMSecLimit) : this.stackSource.SampleTimeRelativeMSecLimit;
 
                 this.callTree = new CallTree(ScalingPolicyKind.TimeMetric);
                 this.callTree.TimeHistogramController = new TimeHistogramController(this.callTree, startTimeRelativeMsec, endTimeRelativeMsec);

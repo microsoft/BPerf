@@ -1,23 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2036
+VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.StackViewer", "Microsoft.BPerf.StackViewer\Microsoft.BPerf.StackViewer.csproj", "{D97BBB84-D818-4482-909C-387827165626}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.BPerf.StackViewer", "Microsoft.BPerf.StackViewer\Microsoft.BPerf.StackViewer.csproj", "{D97BBB84-D818-4482-909C-387827165626}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.ModuleInformation.Abstractions", "Microsoft.BPerf.ModuleInformation.Abstractions\Microsoft.BPerf.ModuleInformation.Abstractions.csproj", "{4E5B8013-9E3B-41AF-B9FE-955F54D034B2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.BPerf.ModuleInformation.Abstractions", "Microsoft.BPerf.ModuleInformation.Abstractions\Microsoft.BPerf.ModuleInformation.Abstractions.csproj", "{4E5B8013-9E3B-41AF-B9FE-955F54D034B2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.StackInformation.Etw", "Microsoft.BPerf.StackInformation.Etw\Microsoft.BPerf.StackInformation.Etw.csproj", "{C438BF26-6991-4911-9416-99BB85226E7E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.BPerf.StackInformation.Etw", "Microsoft.BPerf.StackInformation.Etw\Microsoft.BPerf.StackInformation.Etw.csproj", "{C438BF26-6991-4911-9416-99BB85226E7E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.Tracing.Stacks", "Microsoft.Diagnostics.Tracing.Stacks\Microsoft.Diagnostics.Tracing.Stacks.csproj", "{FD98DA79-B53D-460C-92DF-357005C48A10}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.Tracing.Stacks", "Microsoft.Diagnostics.Tracing.Stacks\Microsoft.Diagnostics.Tracing.Stacks.csproj", "{FD98DA79-B53D-460C-92DF-357005C48A10}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.SymbolicInformation.ProgramDatabase", "Microsoft.BPerf.SymbolicInformation.ProgramDatabase\Microsoft.BPerf.SymbolicInformation.ProgramDatabase.csproj", "{8BE84DAB-E793-47E3-82D2-7478A88E08F6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.BPerf.SymbolicInformation.ProgramDatabase", "Microsoft.BPerf.SymbolicInformation.ProgramDatabase\Microsoft.BPerf.SymbolicInformation.ProgramDatabase.csproj", "{8BE84DAB-E793-47E3-82D2-7478A88E08F6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.Internal.CabExtraction", "Microsoft.BPerf.Internal.CabExtraction\Microsoft.BPerf.Internal.CabExtraction.csproj", "{85A1E1A7-FB2A-4026-8C4E-029637799367}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.BPerf.Internal.CabExtraction", "Microsoft.BPerf.Internal.CabExtraction\Microsoft.BPerf.Internal.CabExtraction.csproj", "{85A1E1A7-FB2A-4026-8C4E-029637799367}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.StackAggregation", "Microsoft.BPerf.StackAggregation\Microsoft.BPerf.StackAggregation.csproj", "{C81546AB-BFDE-46B6-9193-D848EF6E00AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.BPerf.StackAggregation", "Microsoft.BPerf.StackAggregation\Microsoft.BPerf.StackAggregation.csproj", "{C81546AB-BFDE-46B6-9193-D848EF6E00AA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.BPerf.SymbolicInformation.Interfaces", "Microsoft.BPerf.SymbolicInformation.Interfaces\Microsoft.BPerf.SymbolicInformation.Interfaces.csproj", "{710944E8-8B55-4C4A-8C3D-9993AF0CEC2B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.BPerf.SymbolicInformation.Interfaces", "Microsoft.BPerf.SymbolicInformation.Interfaces\Microsoft.BPerf.SymbolicInformation.Interfaces.csproj", "{710944E8-8B55-4C4A-8C3D-9993AF0CEC2B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.BPerf.SymbolServer.Interfaces", "Microsoft.BPerf.SymbolServer.Interfaces\Microsoft.BPerf.SymbolServer.Interfaces.csproj", "{218EBA63-B5CD-4036-BCF4-B7DEFEB5F94A}"
 EndProject

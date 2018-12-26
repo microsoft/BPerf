@@ -3,28 +3,18 @@
 
 namespace Microsoft.BPerf.StackViewer
 {
-    using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
-    using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.BPerf.StackInformation.Abstractions;
+    using Microsoft.BPerf.StackAggregation;
     using Microsoft.BPerf.StackInformation.Etw;
-    using Microsoft.BPerf.SymbolServer.Interfaces;
+    using Microsoft.Diagnostics.Symbols;
+    using Microsoft.Diagnostics.Tracing.Etlx;
 
     public sealed class DeserializedData : IDeserializedData
     {
-        private readonly string uri;
-
-        private readonly FileLocationType locationType;
-
-        private readonly ISourceServerAuthorizationInformationProvider sourceServerAuthorizationInformationProvider;
-
-        private readonly ISymbolServerArtifactRetriever symbolServerArtifactRetriever;
-
-        private readonly string tempDownloadLocation;
+        private readonly string filename;
 
         private readonly SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
 
@@ -34,17 +24,16 @@ namespace Microsoft.BPerf.StackViewer
 
         private readonly Dictionary<StackViewerModel, ICallTreeData> callTreeDataCache = new Dictionary<StackViewerModel, ICallTreeData>();
 
+        private readonly SymbolReader symbolReader;
+
         private int initialized;
 
-        private EtwDeserializer deserializer;
+        private TraceLogEtwDeserializer deserializer;
 
-        public DeserializedData(string uri, FileLocationType locationType, ISourceServerAuthorizationInformationProvider sourceServerAuthorizationInformationProvider, ISymbolServerArtifactRetriever symbolServerArtifactRetriever, string tempDownloadLocation)
+        public DeserializedData(string filename, SymbolReader symbolReader)
         {
-            this.uri = uri;
-            this.locationType = locationType;
-            this.sourceServerAuthorizationInformationProvider = sourceServerAuthorizationInformationProvider;
-            this.symbolServerArtifactRetriever = symbolServerArtifactRetriever;
-            this.tempDownloadLocation = tempDownloadLocation;
+            this.filename = filename;
+            this.symbolReader = symbolReader;
         }
 
         public async ValueTask<List<StackEventTypeInfo>> GetStackEventTypesAsync()
@@ -53,7 +42,7 @@ namespace Microsoft.BPerf.StackViewer
             return this.stackEventTypes;
         }
 
-        public async ValueTask<ICallTreeData> GetCallTreeAsync(StackViewerModel model)
+        public async ValueTask<ICallTreeData> GetCallTreeAsync(StackViewerModel model, GenericStackSource stackSource = null)
         {
             await this.EnsureInitialized();
 
@@ -61,7 +50,7 @@ namespace Microsoft.BPerf.StackViewer
             {
                 if (!this.callTreeDataCache.TryGetValue(model, out var value))
                 {
-                    value = new CallTreeData(this.symbolServerArtifactRetriever, this.sourceServerAuthorizationInformationProvider, this.deserializer, model);
+                    value = new CallTreeData(stackSource ?? this.deserializer.GetStackSource((ProcessIndex)int.Parse(model.Pid), int.Parse(model.StackType)), model, this.symbolReader);
                     this.callTreeDataCache.Add(model, value);
                 }
 
@@ -75,24 +64,10 @@ namespace Microsoft.BPerf.StackViewer
             return this.processList;
         }
 
-        private async Task<string> DownloadFile(string url)
+        public async ValueTask<List<EventData>> GetEvents(EventViewerModel model)
         {
-            using (HttpClient client = new HttpClient())
-            {
-                using (var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
-                {
-                    using (var streamToReadFrom = await response.Content.ReadAsStreamAsync())
-                    {
-                        string fileToWriteTo = Path.Combine(this.tempDownloadLocation + Guid.NewGuid() + ".etl");
-                        using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
-                        {
-                            await streamToReadFrom.CopyToAsync(streamToWriteTo);
-                        }
-
-                        return fileToWriteTo;
-                    }
-                }
-            }
+            await this.EnsureInitialized();
+            return this.deserializer.GetEvents(model.EventTypes, model.TextFilter, model.MaxEventCount, model.Start, model.End);
         }
 
         private async Task EnsureInitialized()
@@ -114,26 +89,26 @@ namespace Microsoft.BPerf.StackViewer
                     return;
                 }
 
-                var filePath = this.locationType == FileLocationType.Url ? await this.DownloadFile(this.uri) : this.uri;
+                this.deserializer = new TraceLogEtwDeserializer(this.filename);
 
-                this.deserializer = new EtwDeserializer(filePath);
+                this.stackEventTypes.Add(new StackEventTypeInfo(0, "All Events", this.deserializer.TotalEventCount, this.deserializer.TotalStackCount));
 
-                foreach (var pair in this.deserializer.EventStacks)
+                foreach (var pair in this.deserializer.EventStats.OrderByDescending(t => t.Value.StackCount))
                 {
-                    this.stackEventTypes.Add(new StackEventTypeInfo(pair.Key, pair.Value.EventName, pair.Value.SampleIndices.Count));
+                    this.stackEventTypes.Add(new StackEventTypeInfo(pair.Key, pair.Value.EventName, pair.Value.Count, pair.Value.StackCount));
                 }
 
-                foreach (var pair in this.deserializer.ImageLoadMap.OrderBy(t => t.Value.Sum(y => y.InstructionPointers.Count)).Reverse())
+                float totalmsec = 0;
+                foreach (var traceProcess in this.deserializer.TraceProcesses)
                 {
-                    long total = 0;
-                    foreach (var image in pair.Value)
-                    {
-                        total += image.InstructionPointers.Count;
-                    }
+                    totalmsec += traceProcess.CPUMSec;
+                }
 
-                    this.processList.Add(this.deserializer.ProcessIdToNameMap.TryGetValue(pair.Key, out var processName)
-                        ? new ProcessInfo(processName, pair.Key, total)
-                        : new ProcessInfo($"Process {pair.Key}", pair.Key, total));
+                this.processList.Add(new ProcessInfo("All Processes", (int)ProcessIndex.Invalid, totalmsec));
+
+                foreach (var pair in this.deserializer.TraceProcesses.OrderByDescending(t => t.CPUMSec))
+                {
+                    this.processList.Add(new ProcessInfo(pair.Name + $" ({pair.ProcessID})", (int)pair.ProcessIndex, pair.CPUMSec));
                 }
 
                 this.initialized = 1;

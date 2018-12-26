@@ -3,9 +3,13 @@
 
 namespace Microsoft.BPerf.StackViewer
 {
+    using System;
     using System.Collections.Generic;
+    using System.Text;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.WebUtilities;
+    using Microsoft.BPerf.StackInformation.Etw;
+    using Microsoft.Extensions.Options;
 
     public sealed class StackViewerController
     {
@@ -13,109 +17,66 @@ namespace Microsoft.BPerf.StackViewer
 
         private readonly StackViewerModel model;
 
-        public StackViewerController(IDeserializedDataCache dataCache, StackViewerModel model)
+        private readonly StackViewerSettings stackViewerSettings;
+
+        public StackViewerController(IDeserializedDataCache dataCache, StackViewerModel model, IOptions<StackViewerSettings> stackViewerSettings)
         {
             this.dataCache = dataCache;
             this.model = model;
+            this.stackViewerSettings = stackViewerSettings.Value;
         }
 
-        [HttpGet]
-        [Route("stackviewer/resolvesymbol", Name = "ResolveSymbol")]
-        public ContentResult ResolveSymbol(uint pid, string eip)
+        public async ValueTask<List<StackEventTypeInfo>> EventListAPI()
         {
-            // return new ContentResult { Content = this.data.ResolveSymbol(pid, ulong.Parse(eip, System.Globalization.NumberStyles.HexNumber)) };
-            return null;
+            var deserializedData = this.dataCache.GetData(this.model.Filename);
+            return await deserializedData.GetStackEventTypesAsync();
         }
 
-        [HttpGet]
-        [Route("stackviewer/summary")]
-        public async ValueTask<List<TreeNode>> Hotspots(int numNodes)
+        public async ValueTask<List<ProcessInfo>> ProcessListAPI()
+        {
+            var deserializedData = this.dataCache.GetData(this.model.Filename);
+            return await deserializedData.GetProcessListAsync();
+        }
+
+        public async ValueTask<IEnumerable<TreeNode>> HotspotsAPI()
         {
             var data = await this.GetData();
-            return await data.GetSummaryTree(numNodes);
+            return await data.GetSummaryTree(this.stackViewerSettings.NumberOfDisplayedTableEntries);
         }
 
-        [HttpGet]
-        [Route("stackviewer/node")]
-        public async ValueTask<TreeNode> Node(string name)
+        public async ValueTask<TreeNode> TreeNodeAPI(string name)
         {
-            if (name == null)
-            {
-                return null;
-            }
-
             var data = await this.GetData();
-            return await data.GetNode(name);
+            return await data.GetNode(Encoding.UTF8.GetString(Base64UrlTextEncoder.Decode(name)));
         }
 
-        [HttpGet]
-        [Route("stackviewer/callertree")]
-        public async ValueTask<TreeNode[]> CallerTree(string name, string path = "")
+        public async ValueTask<TreeNode[]> CallerChildrenAPI(string name, string path)
         {
-            if (name == null)
-            {
-                return null;
-            }
-
             var data = await this.GetData();
-            return await data.GetCallerTree(name, path);
+            return await data.GetCallerTree(Encoding.UTF8.GetString(Base64UrlTextEncoder.Decode(name)), '-', path);
         }
 
-        [HttpGet]
-        [Route("stackviewer/calleetree")]
-        public async ValueTask<TreeNode[]> CalleeTree(string name, string path = "")
+        public async ValueTask<string> DrillIntoAPI(bool exclusive, string name, string path)
         {
-            if (name == null)
-            {
-                return null;
-            }
-
             var data = await this.GetData();
-            return await data.GetCalleeTree(name, path);
+            var stackSource = await data.GetDrillIntoStackSource(exclusive, Encoding.UTF8.GetString(Base64UrlTextEncoder.Decode(name)), '-', path);
+            string samplesKey = Guid.NewGuid().ToString();
+            this.model.SetDrillIntoKey(samplesKey);
+            await this.dataCache.GetData(this.model.Filename).GetCallTreeAsync(this.model, new SourceAwareStackSource(stackSource));
+            return samplesKey;
         }
 
-        [HttpGet]
-        [Route("stackviewer/source")]
-        public async ValueTask<SourceInformation> Source(string name)
+        public async ValueTask<bool> LookupWarmSymbolsAPI(int minCount)
         {
-            if (name == null)
-            {
-                return null;
-            }
-
             var data = await this.GetData();
-            return await data.Source(await data.GetNode(name));
-        }
-
-        [HttpGet]
-        [Route("stackviewer/source/caller")]
-        public async ValueTask<SourceInformation> CallerContextSource(string name, string path = "")
-        {
-            if (name == null)
-            {
-                return null;
-            }
-
-            var data = await this.GetData();
-            return await data.Source(await data.GetCallerTreeNode(name, path));
-        }
-
-        [HttpGet]
-        [Route("stackviewer/source/callee")]
-        public async ValueTask<SourceInformation> CalleeContextSource(string name, string path = "")
-        {
-            if (name == null)
-            {
-                return null;
-            }
-
-            var data = await this.GetData();
-            return await data.Source(await data.GetCalleeTreeNode(name, path));
+            var retVal = data.LookupWarmSymbols(minCount);
+            this.dataCache.ClearAllCacheEntries();
+            return retVal;
         }
 
         private ValueTask<ICallTreeData> GetData()
         {
-            var deserializedData = this.dataCache.GetData(this.model);
+            var deserializedData = this.dataCache.GetData(this.model.Filename);
             return deserializedData.GetCallTreeAsync(this.model);
         }
     }
