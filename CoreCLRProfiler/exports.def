@@ -1,0 +1,41 @@
+LIBRARY "Microsoft.BPerf.CoreCLRProfiler.dll"
+
+EXPORTS
+    DllCanUnloadNow PRIVATE
+    DllGetClassObject PRIVATE
+    GetNumberOfExceptionsThrown
+    GetNumberOfFiltersExecuted
+    GetNumberOfFinallysExecuted
+    GetTotalILBytesJittedForMetadataMethods
+    GetTotalNumberOfMetadataMethodsJitted
+    GetCurrentNumberOfMetadataMethodsJitted
+    GetTotalMachineCodeBytesGeneratedForMetadataMethods
+    GetTotalILBytesJittedForDynamicMethods
+    GetTotalNumberOfDynamicMethods
+    GetCurrentNumberOfDynamicMethods
+    GetTotalCachedMethodsSearched
+    GetTotalCachedMethodsRestored
+    GetTotalNumberOfRuntimeSuspsensions
+    GetTotalNumberOfRuntimeSuspensionsForGC
+    GetTotalNumberOfRuntimeSuspensionsForGCPrep
+    GetCurrentNumberOfClassesLoaded
+    GetTotalNumberOfClassesLoaded
+    GetTotalNumberOfClassLoadFailures
+    GetCurrentNumberOfAssembliesLoaded
+    GetTotalNumberOfAssembliesLoaded
+    GetCurrentNumberOfModulesLoaded
+    GetTotalNumberOfModulesLoaded
+    GetCurrentNumberOfLogicalThreads
+    GetTotalNumberOfInducedGarbageCollections
+    GetTotalNumberOfGen0Collections
+    GetTotalNumberOfGen1Collections
+    GetTotalNumberOfGen2Collections
+    GetTotalNumberOfGen3Collections
+    GetTotalNumberOfBytesInAllHeaps
+    GetGen0HeapSize
+    GetGen1HeapSize
+    GetGen2HeapSize
+    GetGen3HeapSize
+    GetNumberOfGCSegments
+    GetNumberOfFrozenSegments
+    GetTotalNumberOfPromotedBytes

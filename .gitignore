@@ -255,3 +255,6 @@ paket-files/
 *.so
 *.DB-wal
 *.db
+
+# CMake output directory for CoreCLR Profiler
+CoreCLRProfiler/out/*

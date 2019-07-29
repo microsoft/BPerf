@@ -1,5 +1,0 @@
-LIBRARY "BPerfCoreCLRProfiler.Dll"
-
-EXPORTS
-    DllCanUnloadNow PRIVATE
-    DllGetClassObject PRIVATE
