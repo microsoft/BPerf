@@ -11,6 +11,7 @@ EXPORTS
     GetCurrentNumberOfMetadataMethodsJitted
     GetTotalMachineCodeBytesGeneratedForMetadataMethods
     GetTotalILBytesJittedForDynamicMethods
+    GetTotalMachineCodeBytesGeneratedForDynamicMethods
     GetTotalNumberOfDynamicMethods
     GetCurrentNumberOfDynamicMethods
     GetTotalCachedMethodsSearched
@@ -30,7 +31,6 @@ EXPORTS
     GetTotalNumberOfGen0Collections
     GetTotalNumberOfGen1Collections
     GetTotalNumberOfGen2Collections
-    GetTotalNumberOfGen3Collections
     GetTotalNumberOfBytesInAllHeaps
     GetGen0HeapSize
     GetGen1HeapSize
@@ -38,4 +38,3 @@ EXPORTS
     GetGen3HeapSize
     GetNumberOfGCSegments
     GetNumberOfFrozenSegments
-    GetTotalNumberOfPromotedBytes

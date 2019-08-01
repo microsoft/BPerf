@@ -1,50 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-/*
- *
- *Frozen Objects -- implement method thingie
-.NET Counters
-PerfView/BPerf
-large/huge pages
-make serialization/deserialization itnernal call
-regex compile to assembly
-implement multi process serp using ipc mechanism and demo with Kestrel and asp.net core httpcontext
-utf-8 razor, calli + integer based rms/razor stuff
-DI code generation
-bond parser
-protobuf code-gen
-string deduping
-how can frozen segments be in range?
- *
- * number of gc segments
-number of r2r assemblies
-number of assembiles loaded from disk vs. dynamic assemblies
-number of modules loaded from disk. vs dynamic
-number of types loaded ... dynamic vs not
-number of generic types loaded ... 
-number of value types vs number of reference types
-number of type with finalizers
-
-number of interface dispatches generated or called?
-histogram of methods that are huge/small/tiny/etc
-number of types loaded as parameters for Dictionary<T, K>
-  ... more formally, types whose gethashcode and equals is called or used
-types that are involved in locks / objects involved in locks
-areas of code where reference equality is performed
-types that override gethashcode
-methods that use gethashcode and are not override GetHashCode or implementing it as IEquatable
-Tree browser of how to do perf analysis starting at assembly, finding all types loaded, then which methods, etc.
-Propose profiler apis for getting locals info
-number of methods with try/catch in them
-number of methods with high local variables
-stack walk for loh allocations
-GetLOHObjectSizeThreshold
-GetDynamicFunctionInfo
-lock GCStart/GCEnd so we can expose an API to get all segments
-
- */
-
 #pragma once
 
 #include "profiler_pal.h"
@@ -53,19 +9,17 @@ lock GCStart/GCEnd so we can expose an API to get all segments
 #define MIN(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 
+#undef IfFailRet
+#define IfFailRet(EXPR) do { HRESULT hr = (EXPR); if(FAILED(hr)) { return (hr); } } while (0)
+
 #include <cstddef>
 #include <atomic>
 #include <thread>
 #include <mutex>
 #include <unordered_map>
-#include <algorithm>
 #include <fstream>
 #include "cor.h"
 #include "corprof.h"
-#include "ETWHeaders.h"
-
-#undef IfFailRet
-#define IfFailRet(EXPR) do { HRESULT hr = (EXPR); if(FAILED(hr)) { return (hr); } } while (0)
 
 class BPerfProfilerCallback final : public ICorProfilerCallback9
 {
@@ -178,6 +132,7 @@ public:
 
     /* Dynamic Method Counters */
     size_t GetTotalILBytesJittedForDynamicMethods() const;
+    size_t GetTotalMachineCodeBytesGeneratedForDynamicMethods() const;
     size_t GetTotalNumberOfDynamicMethods() const;
     size_t GetCurrentNumberOfDynamicMethods() const;
 
@@ -209,9 +164,7 @@ public:
     size_t GetTotalNumberOfGen0Collections() const;
     size_t GetTotalNumberOfGen1Collections() const;
     size_t GetTotalNumberOfGen2Collections() const;
-    size_t GetTotalNumberOfGen3Collections() const;
     size_t GetTotalNumberOfBytesAllocatedSinceLastGC() const;
-    size_t GetTotalNumberOfPromotedBytes() const;
     size_t GetTotalNumberOfBytesInAllHeaps() const;
     size_t GetGen0HeapSize() const;
     size_t GetGen1HeapSize() const;
@@ -264,91 +217,62 @@ private:
     std::atomic<int> refCount;
     ICorProfilerInfo10* corProfilerInfo;
 
-    ModuleID eventSourceTypeModuleId;
-    mdMethodDef writeEventCoreMethodDef;
-    mdMethodDef writeEventWithRelatedActivityIdCoreMethodDef;
-    mdFieldDef mGuidFieldDef;
-
-    std::mutex methodTableFileMapLock;
-    std::mutex classTableFileMapLock;
-    std::mutex moduleTableFileMapLock;
-    std::mutex assemblyTableFileMapLock;
-
-    std::unordered_map<ThreadID, std::ofstream> methodTableFileMap;
-    std::unordered_map<ThreadID, std::ofstream> classTableFileMap;
-    std::unordered_map<ThreadID, std::ofstream> moduleTableFileMap;
-    std::unordered_map<ThreadID, std::ofstream> assemblyTableFileMap;
-
-    std::ofstream methodTableFile;
-    std::ofstream classTableFile;
-    std::ofstream moduleTableFile;
-    std::ofstream assemblyTableFile;
-
-    std::atomic<size_t> methodTableFileOffset;
-    std::atomic<size_t> classTableFileOffset;
-    std::atomic<size_t> moduleTableFileOffset;
-    std::atomic<size_t> assemblyTableFileOffset;
-    std::atomic<size_t> dataFileOffset;
-
     /* Exception Counters */
-    std::atomic<SIZE_T> numberOfExceptionsThrown;
-    std::atomic<SIZE_T> numberOfFiltersExecuted;
-    std::atomic<SIZE_T> numberOfFinallysExecuted;
+    std::atomic<size_t> numberOfExceptionsThrown;
+    std::atomic<size_t> numberOfFiltersExecuted;
+    std::atomic<size_t> numberOfFinallysExecuted;
 
     /* Metadata Methods Jitting Counters */
-    std::atomic<SIZE_T> totalILBytesJitted;
-    std::atomic<SIZE_T> totalNumberOfMethodsJitted;
-    std::atomic<SIZE_T> currentNumberOfMethodsJitted;
-    std::atomic<SIZE_T> totalMachineCodeBytesGenerated;
+    std::atomic<size_t> totalNumberOfMethodsJitted;
+    std::atomic<size_t> currentNumberOfMethodsJitted;
+    std::atomic<size_t> totalILBytesJitted;
+    std::atomic<size_t> totalMachineCodeBytesGenerated;
 
     /* Dynamic Methods Jitting Counters */
-    std::atomic<SIZE_T> totalILBytesJittedForDynamicMethods;
-    std::atomic<SIZE_T> totalNumberOfDynamicMethods;
-    std::atomic<SIZE_T> currentNumberOfDynamicMethods;
+    std::atomic<size_t> totalILBytesJittedForDynamicMethods;
+    std::atomic<size_t> totalMachineCodeBytesGeneratedForDynamicMethods;
+    std::atomic<size_t> totalNumberOfDynamicMethods;
+    std::atomic<size_t> currentNumberOfDynamicMethods;
 
     /* Precompiled Methods Counters */
-    std::atomic<SIZE_T> totalCachedMethodsSearched;
-    std::atomic<SIZE_T> totalCachedMethodsRestored;
+    std::atomic<size_t> totalCachedMethodsSearched;
+    std::atomic<size_t> totalCachedMethodsRestored;
 
     /* Runtime Suspension Counters */
-    std::atomic<SIZE_T> totalNumberOfRuntimeSuspensions;
-    std::atomic<SIZE_T> totalNumberOfRuntimeSuspensionsForGC;
-    std::atomic<SIZE_T> totalNumberOfRuntimeSuspensionsForGCPrep;
+    std::atomic<size_t> totalNumberOfRuntimeSuspensions;
+    std::atomic<size_t> totalNumberOfRuntimeSuspensionsForGC;
+    std::atomic<size_t> totalNumberOfRuntimeSuspensionsForGCPrep;
 
     /* Type Loader Counters */
-    std::atomic<SIZE_T> currentNumberOfClassesLoaded;
-    std::atomic<SIZE_T> totalNumberOfClassesLoaded;
-    std::atomic<SIZE_T> totalNumberOfClassLoadFailures;
+    std::atomic<size_t> currentNumberOfClassesLoaded;
+    std::atomic<size_t> totalNumberOfClassesLoaded;
+    std::atomic<size_t> totalNumberOfClassLoadFailures;
 
     /* Assembly Loader Counters */
-    std::atomic<SIZE_T> currentNumberOfAssembliesLoaded;
-    std::atomic<SIZE_T> totalNumberOfAssembliesLoaded;
-    std::atomic<SIZE_T> currentNumberOfModulesLoaded;
-    std::atomic<SIZE_T> totalNumberOfModulesLoaded;
+    std::atomic<size_t> currentNumberOfAssembliesLoaded;
+    std::atomic<size_t> totalNumberOfAssembliesLoaded;
+    std::atomic<size_t> currentNumberOfModulesLoaded;
+    std::atomic<size_t> totalNumberOfModulesLoaded;
 
     /* Thread Counters */
-    std::atomic<SIZE_T> currentNumberOfLogicalThreads;
+    std::atomic<size_t> currentNumberOfLogicalThreads;
 
     /* GC Counters */
-    std::atomic<SIZE_T> totalNumberOfInducedGarbageCollections;
-    std::atomic<SIZE_T> totalNumberOfGen0Collections;
-    std::atomic<SIZE_T> totalNumberOfGen1Collections;
-    std::atomic<SIZE_T> totalNumberOfGen2Collections;
-    std::atomic<SIZE_T> totalNumberOfGen3Collections; // LOH
+    std::atomic<size_t> totalNumberOfInducedGarbageCollections;
+    std::atomic<size_t> totalNumberOfGen0Collections;
+    std::atomic<size_t> totalNumberOfGen1Collections;
+    std::atomic<size_t> totalNumberOfGen2Collections;
 
-    std::atomic<SIZE_T> totalNumberOfAllBytesAllocatedSinceLastGC;
-    std::atomic<SIZE_T> totalNumberOfBytesInAllHeaps;
+    std::atomic<size_t> totalNumberOfAllBytesAllocatedSinceLastGC;
+    std::atomic<size_t> totalNumberOfBytesInAllHeaps;
 
-    std::atomic<SIZE_T> gen0HeapSize;
-    std::atomic<SIZE_T> gen1HeapSize;
-    std::atomic<SIZE_T> gen2HeapSize;
-    std::atomic<SIZE_T> gen3HeapSize; // LOH
+    std::atomic<size_t> gen0HeapSize;
+    std::atomic<size_t> gen1HeapSize;
+    std::atomic<size_t> gen2HeapSize;
+    std::atomic<size_t> gen3HeapSize; // LOH
 
-    std::atomic<SIZE_T> numberOfGCSegments;
-    std::atomic<SIZE_T> numberOfFrozenSegments;
-
-    std::atomic<SIZE_T> totalHeapSizeAtGCStart;
-    std::atomic<SIZE_T> totalPromotedBytes;
+    std::atomic<size_t> numberOfGCSegments;
+    std::atomic<size_t> numberOfFrozenSegments;
 };
 
 template <class TInterface>
@@ -408,6 +332,3 @@ public:
 
     TInterface* operator->() const = delete;
 };
-
-#define CLASS_TABLE_ROW_SIZE 16
-#define CLASS_INFO_DATA_SIZE_BASE (sizeof(ModuleID) + sizeof(ClassID))

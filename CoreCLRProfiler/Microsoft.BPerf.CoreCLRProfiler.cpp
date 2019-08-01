@@ -48,6 +48,11 @@ extern "C" size_t GetTotalILBytesJittedForDynamicMethods()
     return ProfilerInstance->GetTotalILBytesJittedForDynamicMethods();
 }
 
+extern "C" size_t GetTotalMachineCodeBytesGeneratedForDynamicMethods()
+{
+    return ProfilerInstance->GetTotalMachineCodeBytesGeneratedForDynamicMethods();
+}
+
 extern "C" size_t GetTotalNumberOfDynamicMethods()
 {
     return ProfilerInstance->GetTotalNumberOfDynamicMethods();
@@ -149,11 +154,6 @@ extern "C" size_t GetTotalNumberOfGen2Collections()
     return ProfilerInstance->GetTotalNumberOfGen2Collections();
 }
 
-extern "C" size_t GetTotalNumberOfGen3Collections()
-{
-    return ProfilerInstance->GetTotalNumberOfGen3Collections();
-}
-
 extern "C" size_t GetTotalNumberOfBytesInAllHeaps()
 {
     return ProfilerInstance->GetTotalNumberOfBytesInAllHeaps();
@@ -187,11 +187,6 @@ extern "C" size_t GetNumberOfGCSegments()
 extern "C" size_t GetNumberOfFrozenSegments()
 {
     return ProfilerInstance->GetNumberOfFrozenSegments();
-}
-
-extern "C" size_t GetTotalNumberOfPromotedBytes()
-{
-    return ProfilerInstance->GetTotalNumberOfPromotedBytes();
 }
 
 extern "C" size_t GetTotalNumberOfBytesAllocatedSinceLastGC()
