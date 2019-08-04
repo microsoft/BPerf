@@ -16,6 +16,7 @@ EXPORTS
     GetCurrentNumberOfDynamicMethods
     GetTotalCachedMethodsSearched
     GetTotalCachedMethodsRestored
+    GetTotalCachedMethodsMachineCodeBytesRestored
     GetTotalNumberOfRuntimeSuspsensions
     GetTotalNumberOfRuntimeSuspensionsForGC
     GetTotalNumberOfRuntimeSuspensionsForGCPrep

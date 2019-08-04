@@ -27,6 +27,7 @@ BPerfProfilerCallback::BPerfProfilerCallback()
     /* Precompiled Methods Counters */
     this->totalCachedMethodsSearched = 0;
     this->totalCachedMethodsRestored = 0;
+    this->totalCachedMethodsMachineCodeBytesRestored = 0;
 
     /* Runtime Suspension Counters */
     this->totalNumberOfRuntimeSuspensions = 0;
@@ -273,6 +274,19 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITCachedFunctionSearchFinished
     if (result == COR_PRF_CACHED_FUNCTION_FOUND)
     {
         ++this->totalCachedMethodsRestored;
+
+        ULONG32 cCodeInfos;
+        IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, 0, &cCodeInfos, nullptr));
+        std::vector<COR_PRF_CODE_INFO> codeInfos(cCodeInfos);
+        IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, cCodeInfos, &cCodeInfos, codeInfos.data()));
+
+        size_t codeSize = 0;
+        for (auto& s : codeInfos)
+        {
+            codeSize += s.size;
+        }
+
+        this->totalCachedMethodsMachineCodeBytesRestored += codeSize;
     }
 
     return S_OK;
@@ -794,6 +808,11 @@ size_t BPerfProfilerCallback::GetTotalCachedMethodsSearched() const
 size_t BPerfProfilerCallback::GetTotalCachedMethodsRestored() const
 {
     return this->totalCachedMethodsRestored;
+}
+
+size_t BPerfProfilerCallback::GetTotalCachedMethodsMachineCodeBytesRestored() const
+{
+    return this->totalCachedMethodsMachineCodeBytesRestored;
 }
 
 /* Runtime Suspension Counters */

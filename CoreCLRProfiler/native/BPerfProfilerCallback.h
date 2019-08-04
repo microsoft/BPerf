@@ -139,6 +139,7 @@ public:
     /* Precompiled Method Counters */
     size_t GetTotalCachedMethodsSearched() const;
     size_t GetTotalCachedMethodsRestored() const;
+    size_t GetTotalCachedMethodsMachineCodeBytesRestored() const;
 
     /* Runtime Suspension Counters */
     size_t GetTotalNumberOfRuntimeSuspsensions() const;
@@ -237,6 +238,7 @@ private:
     /* Precompiled Methods Counters */
     std::atomic<size_t> totalCachedMethodsSearched;
     std::atomic<size_t> totalCachedMethodsRestored;
+    std::atomic<size_t> totalCachedMethodsMachineCodeBytesRestored;
 
     /* Runtime Suspension Counters */
     std::atomic<size_t> totalNumberOfRuntimeSuspensions;

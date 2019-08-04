@@ -74,6 +74,11 @@ extern "C" size_t GetTotalCachedMethodsRestored()
     return ProfilerInstance->GetTotalCachedMethodsRestored();
 }
 
+extern "C" size_t GetTotalCachedMethodsMachineCodeBytesRestored()
+{
+    return ProfilerInstance->GetTotalCachedMethodsMachineCodeBytesRestored();
+}
+
 /* Runtime Suspension Counters */
 extern "C" size_t GetTotalNumberOfRuntimeSuspsensions()
 {
