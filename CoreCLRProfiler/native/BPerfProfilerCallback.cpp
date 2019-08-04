@@ -694,14 +694,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::ModuleInMemorySymbolsUpdated(Mo
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::DynamicMethodJITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock, LPCBYTE ilHeader, ULONG cbILHeader)
 {
-    if (reinterpret_cast<const COR_ILMETHOD_TINY*>(ilHeader)->IsTiny())
-    {
-        this->totalILBytesJittedForDynamicMethods += reinterpret_cast<const COR_ILMETHOD_TINY*>(ilHeader)->GetCodeSize();
-    }
-    else if (reinterpret_cast<const COR_ILMETHOD_FAT*>(ilHeader)->IsFat())
-    {
-        this->totalILBytesJittedForDynamicMethods += reinterpret_cast<const COR_ILMETHOD_FAT*>(ilHeader)->GetCodeSize();
-    }
+    this->totalILBytesJittedForDynamicMethods += cbILHeader;
 
     ++this->totalNumberOfDynamicMethods;
     ++this->currentNumberOfDynamicMethods;
