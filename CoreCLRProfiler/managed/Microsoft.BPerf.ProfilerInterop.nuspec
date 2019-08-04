@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata minClientVersion="2.12">
-    <id>Microsoft.FrozenObjects</id>
+    <id>Microsoft.BPerf.CoreCLRProfiler</id>
     <version>$version$</version>
     <authors>Microsoft and Contributors</authors>
     <owners>Microsoft and Contributors</owners>
