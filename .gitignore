@@ -257,4 +257,4 @@ paket-files/
 *.db
 
 # CMake output directory for CoreCLR Profiler
-CoreCLRProfiler/out/*
+CoreCLRProfiler/native/out/*

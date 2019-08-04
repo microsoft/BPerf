@@ -247,7 +247,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITCompilationFinished(Function
     ULONG32 cCodeInfos;
     IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, 0, &cCodeInfos, nullptr));
     std::vector<COR_PRF_CODE_INFO> codeInfos(cCodeInfos);
-    IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, 0, &cCodeInfos, codeInfos.data()));
+    IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, cCodeInfos, &cCodeInfos, codeInfos.data()));
 
     size_t codeSize = 0;
     for (auto &s : codeInfos)
@@ -693,7 +693,17 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::ModuleInMemorySymbolsUpdated(Mo
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::DynamicMethodJITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock, LPCBYTE ilHeader, ULONG cbILHeader)
 {
-    this->totalILBytesJittedForDynamicMethods = 0; // TODO: FIXME
+    const auto methodHeader = reinterpret_cast<const IMAGE_COR_ILMETHOD*>(ilHeader);
+
+    if ((methodHeader->Tiny.Flags_CodeSize & CorILMethod_FormatMask >> 1) == CorILMethod_TinyFormat)
+    {
+        this->totalILBytesJittedForDynamicMethods += methodHeader->Tiny.Flags_CodeSize >> 2;
+    }
+    else if ((methodHeader->Fat.Flags & CorILMethod_FormatMask) == CorILMethod_FatFormat)
+    {
+        this->totalILBytesJittedForDynamicMethods += reinterpret_cast<const IMAGE_COR_ILMETHOD_FAT*>(methodHeader)->CodeSize;
+    }
+
     ++this->totalNumberOfDynamicMethods;
     ++this->currentNumberOfDynamicMethods;
 
@@ -705,7 +715,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::DynamicMethodJITCompilationFini
     ULONG32 cCodeInfos;
     IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, 0, &cCodeInfos, nullptr));
     std::vector<COR_PRF_CODE_INFO> codeInfos(cCodeInfos);
-    IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, 0, &cCodeInfos, codeInfos.data()));
+    IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, cCodeInfos, &cCodeInfos, codeInfos.data()));
 
     size_t codeSize = 0;
     for (auto& s : codeInfos)
