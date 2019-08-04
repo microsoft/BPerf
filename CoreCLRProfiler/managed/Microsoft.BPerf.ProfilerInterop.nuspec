@@ -7,10 +7,10 @@
     <owners>Microsoft and Contributors</owners>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <license type="expression">MIT</license>
-    <projectUrl>https://github.com/microsoft/FrozenObjects</projectUrl>
-    <description>Deserializer for Frozen Objects.</description>
+    <projectUrl>https://github.com/microsoft/BPerf</projectUrl>
+    <description>CoreCLR Profiler + Managed Library</description>
     <copyright>Copyright © Microsoft</copyright>
-    <repository type="git" url="https://github.com/microsoft/FrozenObjects" />
+    <repository type="git" url="https://github.com/microsoft/BPerf" />
   </metadata>
   <files>
     <file src="bin/Release/netstandard2.0/Microsoft.BPerf.ProfilerInterop.dll" target="lib/netstandard2.0" />
