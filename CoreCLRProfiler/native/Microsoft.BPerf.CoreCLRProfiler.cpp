@@ -184,6 +184,11 @@ extern "C" size_t GetGen3HeapSize()
     return ProfilerInstance->GetGen3HeapSize();
 }
 
+extern "C" size_t GetFrozenHeapSize()
+{
+    return ProfilerInstance->GetFrozenHeapSize();
+}
+
 extern "C" size_t GetNumberOfGCSegments()
 {
     return ProfilerInstance->GetNumberOfGCSegments();

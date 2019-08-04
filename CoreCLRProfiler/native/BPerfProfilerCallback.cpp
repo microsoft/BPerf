@@ -61,6 +61,7 @@ BPerfProfilerCallback::BPerfProfilerCallback()
     this->gen1HeapSize = 0;
     this->gen2HeapSize = 0;
     this->gen3HeapSize = 0; // LOH
+    this->frozenHeapSize = 0;
 
     this->numberOfGCSegments = 0;
     this->numberOfFrozenSegments = 0;
@@ -593,6 +594,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::SurvivingReferences(ULONG cSurv
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::GarbageCollectionFinished()
 {
     size_t generationSizes[4] = { 0, 0, 0, 0 };
+    size_t frozenSegmentsSize = 0;
 
     ULONG cObjectRanges = 0;
     IfFailRet(this->corProfilerInfo->GetGenerationBounds(0, &cObjectRanges, nullptr));
@@ -602,14 +604,17 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::GarbageCollectionFinished()
     size_t frozenSegmentCount = 0;
     for (auto &s : objectRanges)
     {
-        generationSizes[s.generation] += s.rangeLength;
-
         BOOL bFrozen = FALSE;
         this->corProfilerInfo->IsFrozenObject(s.rangeStart, &bFrozen);
 
         if (bFrozen)
         {
+            frozenSegmentsSize += s.rangeLength;
             ++frozenSegmentCount;
+        }
+        else
+        {
+            generationSizes[s.generation] += s.rangeLength;
         }
     }
 
@@ -620,8 +625,9 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::GarbageCollectionFinished()
     this->gen1HeapSize = generationSizes[COR_PRF_GC_GEN_1];
     this->gen2HeapSize = generationSizes[COR_PRF_GC_GEN_2];
     this->gen3HeapSize = generationSizes[COR_PRF_GC_LARGE_OBJECT_HEAP];
+    this->frozenHeapSize = frozenSegmentsSize;
 
-    this->totalNumberOfBytesInAllHeaps = generationSizes[COR_PRF_GC_GEN_0] + generationSizes[COR_PRF_GC_GEN_1] + generationSizes[COR_PRF_GC_GEN_2] + generationSizes[COR_PRF_GC_LARGE_OBJECT_HEAP];
+    this->totalNumberOfBytesInAllHeaps = generationSizes[COR_PRF_GC_GEN_0] + generationSizes[COR_PRF_GC_GEN_1] + generationSizes[COR_PRF_GC_GEN_2] + generationSizes[COR_PRF_GC_LARGE_OBJECT_HEAP] + frozenSegmentsSize;
 
     return S_OK;
 }
@@ -922,6 +928,11 @@ size_t BPerfProfilerCallback::GetGen2HeapSize() const
 size_t BPerfProfilerCallback::GetGen3HeapSize() const
 {
     return this->gen3HeapSize;
+}
+
+size_t BPerfProfilerCallback::GetFrozenHeapSize() const
+{
+    return this->frozenHeapSize;
 }
 
 size_t BPerfProfilerCallback::GetNumberOfGCSegments() const

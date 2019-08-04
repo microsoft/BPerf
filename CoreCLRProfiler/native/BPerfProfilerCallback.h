@@ -171,6 +171,7 @@ public:
     size_t GetGen1HeapSize() const;
     size_t GetGen2HeapSize() const;
     size_t GetGen3HeapSize() const;
+    size_t GetFrozenHeapSize() const;
     size_t GetNumberOfGCSegments() const;
     size_t GetNumberOfFrozenSegments() const;
 
@@ -272,6 +273,7 @@ private:
     std::atomic<size_t> gen1HeapSize;
     std::atomic<size_t> gen2HeapSize;
     std::atomic<size_t> gen3HeapSize; // LOH
+    std::atomic<size_t> frozenHeapSize; // Frozen
 
     std::atomic<size_t> numberOfGCSegments;
     std::atomic<size_t> numberOfFrozenSegments;
