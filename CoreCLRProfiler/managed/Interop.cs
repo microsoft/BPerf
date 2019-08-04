@@ -47,6 +47,9 @@
         public static extern IntPtr GetTotalCachedMethodsRestored();
 
         [DllImport(dllName)]
+        public static extern IntPtr GetTotalCachedMethodsMachineCodeBytesRestored();
+
+        [DllImport(dllName)]
         public static extern IntPtr GetTotalNumberOfRuntimeSuspsensions();
 
         [DllImport(dllName)]
@@ -105,6 +108,9 @@
 
         [DllImport(dllName)]
         public static extern IntPtr GetGen3HeapSize();
+
+        [DllImport(dllName)]
+        public static extern IntPtr GetFrozenHeapSize();
 
         [DllImport(dllName)]
         public static extern IntPtr GetNumberOfGCSegments();
