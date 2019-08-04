@@ -1,5 +1,6 @@
 #include "BPerfProfilerCallback.h"
 #include <vector>
+#include "corhlpr.h"
 
 BPerfProfilerCallback::BPerfProfilerCallback()
 {
@@ -693,15 +694,13 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::ModuleInMemorySymbolsUpdated(Mo
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::DynamicMethodJITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock, LPCBYTE ilHeader, ULONG cbILHeader)
 {
-    const auto methodHeader = reinterpret_cast<const IMAGE_COR_ILMETHOD*>(ilHeader);
-
-    if ((methodHeader->Tiny.Flags_CodeSize & CorILMethod_FormatMask >> 1) == CorILMethod_TinyFormat)
+    if (reinterpret_cast<const COR_ILMETHOD_TINY*>(ilHeader)->IsTiny())
     {
-        this->totalILBytesJittedForDynamicMethods += methodHeader->Tiny.Flags_CodeSize >> 2;
+        this->totalILBytesJittedForDynamicMethods += reinterpret_cast<const COR_ILMETHOD_TINY*>(ilHeader)->GetCodeSize();
     }
-    else if ((methodHeader->Fat.Flags & CorILMethod_FormatMask) == CorILMethod_FatFormat)
+    else if (reinterpret_cast<const COR_ILMETHOD_FAT*>(ilHeader)->IsFat())
     {
-        this->totalILBytesJittedForDynamicMethods += reinterpret_cast<const IMAGE_COR_ILMETHOD_FAT*>(methodHeader)->CodeSize;
+        this->totalILBytesJittedForDynamicMethods += reinterpret_cast<const COR_ILMETHOD_FAT*>(ilHeader)->GetCodeSize();
     }
 
     ++this->totalNumberOfDynamicMethods;
