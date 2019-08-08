@@ -90,9 +90,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Initialize(IUnknown* pICorProfi
                              COR_PRF_MONITOR_MODULE_LOADS     |
                              COR_PRF_MONITOR_CACHE_SEARCHES   |
                              COR_PRF_MONITOR_JIT_COMPILATION  |
-                             COR_PRF_MONITOR_FUNCTION_UNLOADS |
                              COR_PRF_MONITOR_EXCEPTIONS       |
-                             COR_PRF_MONITOR_CLR_EXCEPTIONS   |
                              COR_PRF_MONITOR_CLASS_LOADS      |
                              COR_PRF_ENABLE_STACK_SNAPSHOT    |
                              COR_PRF_MONITOR_ASSEMBLY_LOADS   ;
