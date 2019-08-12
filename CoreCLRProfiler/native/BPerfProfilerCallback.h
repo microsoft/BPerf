@@ -20,6 +20,8 @@
 #include <fstream>
 #include "cor.h"
 #include "corprof.h"
+#include "CQuickBytes.h"
+#include "EventLogger.h"
 
 class BPerfProfilerCallback final : public ICorProfilerCallback9
 {
@@ -277,6 +279,8 @@ private:
 
     std::atomic<size_t> numberOfGCSegments;
     std::atomic<size_t> numberOfFrozenSegments;
+
+    std::shared_ptr<FileWriter> writer;
 };
 
 template <class TInterface>
@@ -336,3 +340,12 @@ public:
 
     TInterface* operator->() const = delete;
 };
+
+LPCWSTR PrettyPrintSigWorker(
+    PCCOR_SIGNATURE& typePtr, // type to convert,
+    size_t typeLen,           // length of type
+    const WCHAR* name,        // can be "", the name of the method for this sig
+    CQuickBytes* out,         // where to put the pretty printed string
+    IMetaDataImport* pIMDI);  // Import api to use.
+
+#define addr(x) &x[0]

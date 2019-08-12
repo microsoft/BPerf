@@ -1,6 +1,94 @@
 #include "BPerfProfilerCallback.h"
 #include <vector>
+#include <stack>
 #include "corhlpr.h"
+#include "JittingStartedEvent.h"
+
+thread_local static EventLogger Logger;
+
+static std::stack<portable_wide_string> BuildClassStack(IMetaDataImport* metaDataImport, mdTypeDef classTypeDef)
+{
+    HRESULT hr;
+    std::stack<portable_wide_string> classStack;
+    DWORD typeDefFlags;
+    ULONG classNameLength = 0;
+
+    for (;;)
+    {
+        hr = metaDataImport->GetTypeDefProps(classTypeDef, nullptr, 0, &classNameLength, &typeDefFlags, nullptr);
+        if (FAILED(hr))
+        {
+            break;
+        }
+
+        portable_wide_string className(classNameLength, ZEROSTRING);
+
+        metaDataImport->GetTypeDefProps(classTypeDef, addr(className), classNameLength, &classNameLength, &typeDefFlags, nullptr);
+        if (FAILED(hr))
+        {
+            break;
+        }
+
+        classStack.push(std::move(className));
+
+        if (!IsTdNested(typeDefFlags))
+        {
+            break;
+        }
+
+        hr = metaDataImport->GetNestedClassProps(classTypeDef, &classTypeDef);
+        if (FAILED(hr))
+        {
+            break;
+        }
+    }
+
+    return classStack;
+}
+
+static HRESULT Foo(ICorProfilerInfo10* corProfilerInfo, UINT_PTR functionId, std::atomic<int64_t> & totalILBytesJitted)
+{
+    UINT_PTR moduleId;
+    mdToken methodToken;
+    IfFailRet(corProfilerInfo->GetFunctionInfo(functionId, nullptr, &moduleId, &methodToken));
+
+    ULONG methodILSize;
+    IfFailRet(corProfilerInfo->GetILFunctionBody(moduleId, methodToken, nullptr, &methodILSize));
+
+    totalILBytesJitted += methodILSize;
+
+    CComPtr<IMetaDataImport> metadataImport;
+    IfFailRet(corProfilerInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown * *>(&metadataImport)));
+
+    mdTypeDef classTypeDef;
+    ULONG methodNameLength = 0;
+    ULONG sigLength = 0;
+    PCCOR_SIGNATURE sig;
+
+    IfFailRet(metadataImport->GetMethodProps(methodToken, &classTypeDef, nullptr, 0, &methodNameLength, nullptr, &sig, &sigLength, nullptr, nullptr));
+    portable_wide_string methodName(methodNameLength, ZEROSTRING);
+    IfFailRet(metadataImport->GetMethodProps(methodToken, nullptr, &methodName[0], methodNameLength, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr));
+    IfFailRet(metadataImport->GetTypeDefProps(classTypeDef, nullptr, 0, nullptr, nullptr, nullptr));
+    std::stack<portable_wide_string> classStack(BuildClassStack(metadataImport, classTypeDef));
+
+    portable_wide_string fullClassName;
+
+    while (!classStack.empty())
+    {
+        fullClassName += classStack.top();
+        classStack.pop();
+        if (!classStack.empty())
+        {
+            fullClassName += W("+");
+        }
+    }
+
+    CQuickBytes quickBytes;
+    portable_wide_string signatureString(PrettyPrintSigWorker(sig, sigLength, EMPTYSTRING, &quickBytes, metadataImport));
+    signatureString.resize(signatureString.length() + 1); // we want the null terminator when we serialize
+
+    Logger.LogEvent<JittingStartedEvent>(functionId, moduleId, methodToken, methodILSize, fullClassName, methodName, methodName);
+}
 
 BPerfProfilerCallback::BPerfProfilerCallback()
 {
@@ -65,6 +153,8 @@ BPerfProfilerCallback::BPerfProfilerCallback()
 
     this->numberOfGCSegments = 0;
     this->numberOfFrozenSegments = 0;
+
+    this->writer = nullptr;
 }
 
 BPerfProfilerCallback::~BPerfProfilerCallback()
@@ -84,6 +174,8 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Initialize(IUnknown* pICorProfi
     {
         return E_FAIL;
     }
+
+    this->writer = std::make_shared<FileWriter>(std::getenv("BPERF_LOG_PATH"));
 
     const DWORD eventsMask = COR_PRF_MONITOR_THREADS          |
                              COR_PRF_MONITOR_SUSPENDS         |
@@ -228,6 +320,46 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::FunctionUnloadStarted(FunctionI
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock)
 {
+    ModuleID moduleId;
+    mdToken methodToken;
+    IfFailRet(this->corProfilerInfo->GetFunctionInfo(functionId, nullptr, &moduleId, &methodToken));
+
+    ULONG methodILSize;
+    IfFailRet(this->corProfilerInfo->GetILFunctionBody(moduleId, methodToken, nullptr, &methodILSize));
+
+    this->totalILBytesJitted += methodILSize;
+
+    CComPtr<IMetaDataImport> metadataImport;
+    IfFailRet(this->corProfilerInfo->GetModuleMetaData(moduleId, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown **>(&metadataImport)));
+
+    mdTypeDef classTypeDef;
+    ULONG methodNameLength = 0;
+    ULONG sigLength = 0;
+    PCCOR_SIGNATURE sig;
+
+    IfFailRet(metadataImport->GetMethodProps(methodToken, &classTypeDef, nullptr, 0, &methodNameLength, nullptr, &sig, &sigLength, nullptr, nullptr));
+    portable_wide_string methodName(methodNameLength, ZEROSTRING);
+    IfFailRet(metadataImport->GetMethodProps(methodToken, nullptr, &methodName[0], methodNameLength, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr));
+
+    IfFailRet(metadataImport->GetTypeDefProps(classTypeDef, nullptr, 0, nullptr, nullptr, nullptr));
+    std::stack<portable_wide_string> classStack(BuildClassStack(metadataImport, classTypeDef));
+
+    portable_wide_string fullClassName;
+
+    while (!classStack.empty())
+    {
+        fullClassName += classStack.top();
+        classStack.pop();
+        if (!classStack.empty())
+        {
+            fullClassName += W("+");
+        }
+    }
+
+    CQuickBytes quickBytes;
+    portable_wide_string signatureString(PrettyPrintSigWorker(sig, sigLength, EMPTYSTRING, &quickBytes, metadataImport));
+    signatureString.resize(signatureString.length() + 1); // we want the null terminator when we serialize
+
     return S_OK;
 }
 
@@ -314,6 +446,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::ThreadDestroyed(ThreadID thread
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::ThreadAssignedToOSThread(ThreadID managedThreadId, DWORD osThreadId)
 {
+    Logger.AttachFileWriter(this->writer, osThreadId);
     return S_OK;
 }
 
