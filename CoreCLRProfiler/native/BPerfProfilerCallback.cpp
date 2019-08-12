@@ -95,8 +95,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Initialize(IUnknown* pICorProfi
                              COR_PRF_ENABLE_STACK_SNAPSHOT    |
                              COR_PRF_MONITOR_ASSEMBLY_LOADS   ;
 
-    const DWORD eventsHigh = COR_PRF_HIGH_MONITOR_DYNAMIC_FUNCTION_UNLOADS |
-                             COR_PRF_HIGH_BASIC_GC                         ;
+    const DWORD eventsHigh = COR_PRF_HIGH_MONITOR_DYNAMIC_FUNCTION_UNLOADS;
 
     return this->corProfilerInfo->SetEventMask2(eventsMask, eventsHigh);
 }
