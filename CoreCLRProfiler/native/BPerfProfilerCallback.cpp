@@ -91,11 +91,10 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Initialize(IUnknown* pICorProfi
                              COR_PRF_MONITOR_CACHE_SEARCHES   |
                              COR_PRF_MONITOR_JIT_COMPILATION  |
                              COR_PRF_MONITOR_EXCEPTIONS       |
-                             COR_PRF_MONITOR_CLASS_LOADS      |
                              COR_PRF_ENABLE_STACK_SNAPSHOT    |
                              COR_PRF_MONITOR_ASSEMBLY_LOADS   ;
 
-    const DWORD eventsHigh = COR_PRF_HIGH_MONITOR_DYNAMIC_FUNCTION_UNLOADS;
+    const DWORD eventsHigh = 0;
 
     return this->corProfilerInfo->SetEventMask2(eventsMask, eventsHigh);
 }
