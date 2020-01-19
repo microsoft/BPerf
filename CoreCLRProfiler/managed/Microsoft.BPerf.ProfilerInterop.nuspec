@@ -14,7 +14,7 @@
   </metadata>
   <files>
     <file src="bin/Release/netstandard2.0/Microsoft.BPerf.ProfilerInterop.dll" target="lib/netstandard2.0" />
-    <file src="../native/Release/Microsoft.BPerf.CoreCLRProfiler.dll" target="content/win-x64/Microsoft.BPerf.CoreCLRProfiler.dll" />
-    <file src="../native/Release/Microsoft.BPerf.CoreCLRProfiler.pdb" target="content/win-x64/Microsoft.BPerf.CoreCLRProfiler.pdb" />
+    <file src="../native/RelWithDebInfo/Microsoft.BPerf.CoreCLRProfiler.dll" target="runtimes/win-x64/native/Microsoft.BPerf.CoreCLRProfiler.dll" />
+    <file src="../native/RelWithDebInfo/Microsoft.BPerf.CoreCLRProfiler.pdb" target="runtimes/win-x64/native/Microsoft.BPerf.CoreCLRProfiler.pdb" />
   </files>
 </package>

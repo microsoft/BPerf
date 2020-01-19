@@ -3,6 +3,8 @@
 #ifndef EVENT_DESCRIPTOR_DEF
 #define EVENT_DESCRIPTOR_DEF
 
+#include <windef.h>
+
 /*
 EVENT_DESCRIPTOR describes and categorizes an event.
 Note that for TraceLogging events, the Id and Version fields are not

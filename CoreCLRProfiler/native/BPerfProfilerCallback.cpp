@@ -2,6 +2,10 @@
 #include <vector>
 #include "corhlpr.h"
 
+#ifdef _WINDOWS
+#include "ETWWindows.h"
+#endif
+
 BPerfProfilerCallback::BPerfProfilerCallback()
 {
     this->refCount = 0;
@@ -90,22 +94,34 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Initialize(IUnknown* pICorProfi
                              COR_PRF_MONITOR_MODULE_LOADS     |
                              COR_PRF_MONITOR_CACHE_SEARCHES   |
                              COR_PRF_MONITOR_JIT_COMPILATION  |
-                             COR_PRF_MONITOR_FUNCTION_UNLOADS |
                              COR_PRF_MONITOR_EXCEPTIONS       |
-                             COR_PRF_MONITOR_CLR_EXCEPTIONS   |
                              COR_PRF_MONITOR_CLASS_LOADS      |
                              COR_PRF_ENABLE_STACK_SNAPSHOT    |
                              COR_PRF_MONITOR_ASSEMBLY_LOADS   ;
 
-    const DWORD eventsHigh = COR_PRF_HIGH_MONITOR_DYNAMIC_FUNCTION_UNLOADS |
-                             COR_PRF_HIGH_BASIC_GC                         |
-                             COR_PRF_HIGH_MONITOR_LARGEOBJECT_ALLOCATED    ;
+    DWORD eventsHigh = COR_PRF_HIGH_MONITOR_DYNAMIC_FUNCTION_UNLOADS |
+                       COR_PRF_HIGH_BASIC_GC                         ;
+
+    if (std::getenv("BPERF_REPORT_LARGEOBJECT_ALLOCATED") != nullptr)
+    {
+#ifdef _WINDOWS
+        RegisterToETW();
+#endif
+        eventsHigh |= COR_PRF_HIGH_MONITOR_LARGEOBJECT_ALLOCATED;
+    }
 
     return this->corProfilerInfo->SetEventMask2(eventsMask, eventsHigh);
 }
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Shutdown()
 {
+    if (std::getenv("BPERF_REPORT_LARGEOBJECT_ALLOCATED") != nullptr)
+    {
+#ifdef _WINDOWS
+        UnregisterFromETW();
+#endif
+    }
+
     if (this->corProfilerInfo != nullptr)
     {
         this->corProfilerInfo->Release();
@@ -426,6 +442,12 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::MovedReferences(ULONG cMovedObj
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::ObjectAllocated(ObjectID objectId, ClassID classId)
 {
+#ifdef _WINDOWS
+    ModuleID moduleId;
+    mdTypeDef typeDef;
+    IfFailRet(this->corProfilerInfo->GetClassIDInfo(classId, &moduleId, &typeDef));
+    ReportLOHAllocation(moduleId, typeDef); // at the moment if we ever get this called it is back of LOH. This is because eventsHigh is restricting it.
+#endif
     return S_OK;
 }
 
