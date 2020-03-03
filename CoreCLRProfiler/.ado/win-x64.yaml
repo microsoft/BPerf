@@ -1,8 +1,6 @@
 pool:
   name: Azure Pipelines
-  demands:
-  - cmake
-  - msbuild
+  vmImage: 'windows-latest'
 
 steps:
 - powershell: |
