@@ -445,8 +445,10 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::ObjectAllocated(ObjectID object
 #ifdef _WINDOWS
     ModuleID moduleId;
     mdTypeDef typeDef;
+    size_t size;
     IfFailRet(this->corProfilerInfo->GetClassIDInfo2(classId, &moduleId, &typeDef, nullptr, 0, nullptr, nullptr));
-    ReportLOHAllocation(moduleId, typeDef); // at the moment if we ever get this called it is back of LOH. This is because eventsHigh is restricting it.
+    IfFailRet(this->corProfilerInfo->GetObjectSize2(objectId, &size));
+    ReportLOHAllocation(moduleId, typeDef, size); // at the moment if we ever get this called it is back of LOH. This is because eventsHigh is restricting it.
 #endif
     return S_OK;
 }
