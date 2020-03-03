@@ -1,0 +1,52 @@
+trigger:
+- master
+- dev
+
+pr:
+- master
+- dev
+
+pool:
+  name: Azure Pipelines
+  vmImage: 'windows-latest'
+
+steps:
+- powershell: |
+   $sourceDir = "$(Build.SourcesDirectory)".Replace("\", "\\")
+   Set-Content -Path $(Build.SourcesDirectory)\sourcelink.json -Value "{ ""documents"": { ""$sourceDir\\*"": ""https://raw.githubusercontent.com/microsoft/BPerf/$(Build.SourceVersion)/*"" } }"
+  displayName: 'PowerShell Script'
+
+- task: CMake@1
+  displayName: CMake
+  inputs:
+    cmakeArgs: '-G "Visual Studio 16 2019" -A x64 $(Build.SourcesDirectory)/CoreCLRProfiler/native/CMakeLists.txt -DLINK_TYPE=Static -DSourceLinkJson=$(Build.SourcesDirectory)\sourcelink.json'
+
+- task: MSBuild@1
+  displayName: 'Build solution CoreCLRProfiler\native\Microsoft.BPerf.CoreCLRProfiler.vcxproj'
+  inputs:
+    solution: 'CoreCLRProfiler\native\Microsoft.BPerf.CoreCLRProfiler.vcxproj'
+    platform: x64
+    configuration: RelWithDebInfo
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet custom'
+  inputs:
+    command: custom
+    custom: pack
+    arguments: '/p:NuspecProperties="version=1.0.0.$(Build.BuildId)" /p:NuspecFile=Microsoft.BPerf.ProfilerInterop.nuspec -c Release'
+    workingDirectory: CoreCLRProfiler/managed
+
+- task: NuGetCommand@2
+  displayName: 'NuGet push to internal feed'
+  inputs:
+    command: push
+    packagesToPush: '$(Build.SourcesDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: external
+    publishFeedCredentials: 'msasg-Bing'
+
+- task: NuGetCommand@2
+  displayName: 'NuGet push'
+  inputs:
+    command: push
+    packagesToPush: '$(Build.SourcesDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    publishVstsFeed: '2d0df07a-afe8-4771-8f48-456a7852cafd/a75f75b3-5627-4efb-a6f9-26c9ae81a223'
