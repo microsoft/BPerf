@@ -33,6 +33,7 @@ const char* Manifest = "<instrumentationManifest xmlns=\"http://schemas.microsof
 "  <template tid=\"LOHAllocationArgs\">\n"
 "   <data name=\"moduleId\" inType=\"win:Pointer\"/>\n"
 "   <data name=\"typeDef\" inType=\"win:UInt32\"/>\n"
+"   <data name=\"size\" inType=\"win:UInt64\"/>\n"
 "  </template>\n"
 "  <template tid=\"TypeLoadedArgs\">\n"
 "   <data name=\"typeNameLength\" inType=\"win:UInt32\"/>\n"
@@ -117,7 +118,7 @@ static void BPerfEventEnableCallback(LPCGUID sourceId, ULONG isEnabled, UCHAR le
     WriteManifestEvent(RegHandle);
 }
 
-static ULONG ReportLOHAllocation(UINT_PTR moduleId, unsigned typeDef)
+static ULONG ReportLOHAllocation(UINT_PTR moduleId, unsigned typeDef, size_t size)
 {
     EVENT_DESCRIPTOR descriptor;
     descriptor.Id = 1;
@@ -128,7 +129,7 @@ static ULONG ReportLOHAllocation(UINT_PTR moduleId, unsigned typeDef)
     descriptor.Version = 0;
     descriptor.Keyword = 0x0000F00000000000;
 
-    EVENT_DATA_DESCRIPTOR dataDescriptors[2];
+    EVENT_DATA_DESCRIPTOR dataDescriptors[3];
     dataDescriptors[0].Ptr = reinterpret_cast<ULONGLONG>(&moduleId);
     dataDescriptors[0].Size = sizeof(UINT_PTR);
     dataDescriptors[0].Reserved = 0;
@@ -137,7 +138,11 @@ static ULONG ReportLOHAllocation(UINT_PTR moduleId, unsigned typeDef)
     dataDescriptors[1].Size = sizeof(unsigned);
     dataDescriptors[1].Reserved = 0;
 
-    return EventWriteEx(RegHandle, &descriptor, 0, 0, nullptr, nullptr, 2, &dataDescriptors[0]);
+    dataDescriptors[2].Ptr = reinterpret_cast<ULONGLONG>(&size);
+    dataDescriptors[2].Size = sizeof(size_t);
+    dataDescriptors[2].Reserved = 0;
+
+    return EventWriteEx(RegHandle, &descriptor, 0, 0, nullptr, nullptr, 3, &dataDescriptors[0]);
 }
 
 static ULONG RegisterToETW()
