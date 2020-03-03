@@ -1,3 +1,11 @@
+trigger:
+  master
+  dev
+
+pr:
+  master
+  dev
+
 pool:
   name: Azure Pipelines
   vmImage: 'windows-latest'
