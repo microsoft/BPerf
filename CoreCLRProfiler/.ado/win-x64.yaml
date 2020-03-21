@@ -1,52 +1,111 @@
+# https://aka.ms/yaml
+
+name: "$(Year:yyyy).$(Month).$(DayOfMonth)$(Rev:.r)"
+
 trigger:
-- master
-- dev
+  - master
+  - dev
 
 pr:
-- master
-- dev
+  - master
+  - dev
 
-pool:
-  name: Azure Pipelines
-  vmImage: 'windows-latest'
+jobs:
+  - job: windows_build
 
-steps:
-- powershell: |
-   $sourceDir = "$(Build.SourcesDirectory)".Replace("\", "\\")
-   Set-Content -Path $(Build.SourcesDirectory)\sourcelink.json -Value "{ ""documents"": { ""$sourceDir\\*"": ""https://raw.githubusercontent.com/microsoft/BPerf/$(Build.SourceVersion)/*"" } }"
-  displayName: 'PowerShell Script'
+    pool:
+      name: Azure Pipelines
+      vmImage: 'windows-latest'
 
-- task: CMake@1
-  displayName: CMake
-  inputs:
-    cmakeArgs: '-G "Visual Studio 16 2019" -A x64 $(Build.SourcesDirectory)/CoreCLRProfiler/native/CMakeLists.txt -DLINK_TYPE=Static -DSourceLinkJson=$(Build.SourcesDirectory)\sourcelink.json'
+    steps:
 
-- task: MSBuild@1
-  displayName: 'Build solution CoreCLRProfiler\native\Microsoft.BPerf.CoreCLRProfiler.vcxproj'
-  inputs:
-    solution: 'CoreCLRProfiler\native\Microsoft.BPerf.CoreCLRProfiler.vcxproj'
-    platform: x64
-    configuration: RelWithDebInfo
+    - powershell: |
+       $sourceDir = "$(Build.SourcesDirectory)".Replace("\", "\\")
+       Set-Content -Path $(Build.SourcesDirectory)\sourcelink.json -Value "{ ""documents"": { ""$sourceDir\\*"": ""https://raw.githubusercontent.com/microsoft/BPerf/$(Build.SourceVersion)/*"" } }"
+      displayName: 'PowerShell Script'
 
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet custom'
-  inputs:
-    command: custom
-    custom: pack
-    arguments: '/p:NuspecProperties="version=1.0.0.$(Build.BuildId)" /p:NuspecFile=Microsoft.BPerf.ProfilerInterop.nuspec -c Release'
-    workingDirectory: CoreCLRProfiler/managed
+    - task: CMake@1
+      displayName: CMake
+      inputs:
+        cmakeArgs: '-G "Visual Studio 16 2019" -A x64 $(Build.SourcesDirectory)/CoreCLRProfiler/native/CMakeLists.txt -DLINK_TYPE=Static -DSourceLinkJson=$(Build.SourcesDirectory)\sourcelink.json'
 
-- task: NuGetCommand@2
-  displayName: 'NuGet push to internal feed'
-  inputs:
-    command: push
-    packagesToPush: '$(Build.SourcesDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-    nuGetFeedType: external
-    publishFeedCredentials: 'msasg-Bing'
+    - task: MSBuild@1
+      displayName: 'Build solution CoreCLRProfiler\native\Microsoft.BPerf.CoreCLRProfiler.vcxproj'
+      inputs:
+        solution: 'CoreCLRProfiler\native\Microsoft.BPerf.CoreCLRProfiler.vcxproj'
+        platform: x64
+        configuration: RelWithDebInfo
 
-- task: NuGetCommand@2
-  displayName: 'NuGet push'
-  inputs:
-    command: push
-    packagesToPush: '$(Build.SourcesDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-    publishVstsFeed: '2d0df07a-afe8-4771-8f48-456a7852cafd/a75f75b3-5627-4efb-a6f9-26c9ae81a223'
+    - publish: $(Build.SourcesDirectory)/RelWithDebInfo
+      artifact: WindowsArtifacts
+
+  - job: linux_build
+
+    pool:
+      vmImage: 'ubuntu-18.04'
+
+    variables:
+      imageName: 'bperflinux'
+      imageTag: '$(build.buildId)'
+      fullImageName: '$(imageName):$(imageTag)'
+
+    steps:
+
+    - script: |
+        pwd
+        ls -lR
+        docker build --build-arg BUILD_VERSION=$(imageTag) --build-arg NUGET_TOKEN=$(System.AccessToken) -t $(fullImageName) .
+        docker run --rm -v $BUILD_ARTIFACTSTAGINGDIRECTORY:/artifacts $(fullImageName) /bin/sh -c "find /output -exec cp -v {} /artifacts \;"
+        ls -l $BUILD_ARTIFACTSTAGINGDIRECTORY
+      displayName: 'Build Docker images'
+
+    - publish: $(Build.ArtifactStagingDirectory)
+      artifact: LinuxArtifacts
+
+  - job: nugetpacking
+    dependsOn:
+    - windows_build
+    - linux_build
+
+    pool:
+      vmImage: 'windows-latest'
+
+    steps:
+
+    - download: current
+      artifact: LinuxArtifacts
+
+    - download: current
+      artifact: WindowsArtifacts
+
+    - task: CopyFiles@2
+      displayName: 'Copy Files to: $(Pipeline.Workspace)'
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)'
+        Contents: CoreCLRProfiler/managed/Microsoft.BPerf.ProfilerInterop.nuspec
+        TargetFolder: '$(Pipeline.Workspace)'
+
+    - task: NuGetCommand@2
+      displayName: 'Pack Microsoft.BPerf.ProfilerInterop'
+      inputs:
+        command: pack
+        packagesToPack: '$(Pipeline.Workspace)/Microsoft.BPerf.ProfilerInterop.nuspec'
+        packDestination: '$(Build.ArtifactStagingDirectory)/NuGetStaging'
+        versioningScheme: byBuildNumber
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet push to internal feed'
+      inputs:
+        command: push
+        packagesToPush: '$(Build.SourcesDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+        nuGetFeedType: external
+        publishFeedCredentials: 'msasg-Bing'
+        allowPackageConflicts: true
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet push'
+      inputs:
+        command: push
+        packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+        publishVstsFeed: '2d0df07a-afe8-4771-8f48-456a7852cafd/a75f75b3-5627-4efb-a6f9-26c9ae81a223'
+        allowPackageConflicts: true
