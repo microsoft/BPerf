@@ -4,9 +4,11 @@ name: "$(Year:yyyy).$(Month).$(DayOfMonth)$(Rev:.r)"
 
 trigger:
   - master
+  - dev
 
 pr:
   - master
+  - dev
 
 jobs:
   - job: windows_build
@@ -57,10 +59,9 @@ jobs:
 
     - script: |
         pwd
-        ls -lR
         cd $(Build.SourcesDirectory)/CoreCLRProfiler/native
         make
-        ls -l $BUILD_ARTIFACTSTAGINGDIRECTORY
+        ls -lR
       displayName: 'Build code'
 
     - publish: $(Build.ArtifactStagingDirectory)
