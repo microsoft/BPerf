@@ -58,13 +58,11 @@ jobs:
         cmakeArgs: '$(Build.SourcesDirectory)/CoreCLRProfiler/native/CMakeLists.txt'
 
     - script: |
-        pwd
         cd $(Build.SourcesDirectory)/CoreCLRProfiler/native
         make
-        ls -lR
       displayName: 'Build code'
 
-    - publish: $(Build.ArtifactStagingDirectory)
+    - publish: $(Build.SourcesDirectory)/CoreCLRProfiler/native
       artifact: LinuxArtifacts
 
   - job: nugetpacking
@@ -88,6 +86,20 @@ jobs:
       inputs:
         SourceFolder: '$(Build.SourcesDirectory)'
         Contents: CoreCLRProfiler/managed/Microsoft.BPerf.ProfilerInterop.nuspec
+        TargetFolder: '$(Pipeline.Workspace)'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet build'
+      inputs:
+        projects: 'Microsoft.BPerf.ProfilerInterop.csproj'
+        arguments: '-c Release'
+        workingDirectory: CoreCLRProfiler/managed
+
+    - task: CopyFiles@2
+      displayName: 'Copy Files to: $(Pipeline.Workspace)'
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)/CoreCLRProfiler/managed/bin/Release/netstandard2.0'
+        Contents: Microsoft.BPerf.ProfilerInterop.dll
         TargetFolder: '$(Pipeline.Workspace)'
 
     - task: NuGetCommand@2
