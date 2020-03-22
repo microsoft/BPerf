@@ -36,7 +36,7 @@ jobs:
         platform: x64
         configuration: RelWithDebInfo
 
-    - publish: $(Build.SourcesDirectory)/RelWithDebInfo
+    - publish: $(Build.SourcesDirectory)/CoreCLRProfiler/native/RelWithDebInfo
       artifact: WindowsArtifacts
 
   - job: linux_build
