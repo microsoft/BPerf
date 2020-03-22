@@ -87,11 +87,12 @@ jobs:
         SourceFolder: '$(Build.SourcesDirectory)'
         Contents: CoreCLRProfiler/managed/Microsoft.BPerf.ProfilerInterop.nuspec
         TargetFolder: '$(Pipeline.Workspace)'
+        flattenFolders: true
 
     - task: DotNetCoreCLI@2
       displayName: 'dotnet build'
       inputs:
-        projects: 'Microsoft.BPerf.ProfilerInterop.csproj'
+        projects: '$(Build.SourcesDirectory)/CoreCLRProfiler/managed/Microsoft.BPerf.ProfilerInterop.csproj'
         arguments: '-c Release'
         workingDirectory: CoreCLRProfiler/managed
 
