@@ -99,28 +99,22 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Initialize(IUnknown* pICorProfi
                              COR_PRF_ENABLE_STACK_SNAPSHOT    |
                              COR_PRF_MONITOR_ASSEMBLY_LOADS   ;
 
-    DWORD eventsHigh = COR_PRF_HIGH_MONITOR_DYNAMIC_FUNCTION_UNLOADS |
+    DWORD eventsHigh = COR_PRF_HIGH_MONITOR_LARGEOBJECT_ALLOCATED    |
+                       COR_PRF_HIGH_MONITOR_DYNAMIC_FUNCTION_UNLOADS |
                        COR_PRF_HIGH_BASIC_GC                         ;
 
-    if (std::getenv("BPERF_REPORT_LARGEOBJECT_ALLOCATED") != nullptr)
-    {
 #ifdef _WINDOWS
-        RegisterToETW();
+    RegisterToETW();
 #endif
-        eventsHigh |= COR_PRF_HIGH_MONITOR_LARGEOBJECT_ALLOCATED;
-    }
 
     return this->corProfilerInfo->SetEventMask2(eventsMask, eventsHigh);
 }
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Shutdown()
 {
-    if (std::getenv("BPERF_REPORT_LARGEOBJECT_ALLOCATED") != nullptr)
-    {
 #ifdef _WINDOWS
-        UnregisterFromETW();
+    UnregisterFromETW();
 #endif
-    }
 
     if (this->corProfilerInfo != nullptr)
     {
