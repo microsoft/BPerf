@@ -3,6 +3,9 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <SignAssembly>true</SignAssembly>
+    <DelaySign>false</DelaySign>
+    <AssemblyOriginatorKeyFile>InteropSign.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
 </Project>
