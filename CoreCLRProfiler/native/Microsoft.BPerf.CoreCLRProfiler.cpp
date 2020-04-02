@@ -8,199 +8,394 @@ BPerfProfilerCallback* ProfilerInstance;
 /* Exception Counters */
 extern "C" size_t GetNumberOfExceptionsThrown()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetNumberOfExceptionsThrown();
 }
 
 extern "C" size_t GetNumberOfFiltersExecuted()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetNumberOfFiltersExecuted();
 }
 
 extern "C" size_t GetNumberOfFinallysExecuted()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetNumberOfFinallysExecuted();
 }
 
 /* Metadata Method Counters */
 extern "C" size_t GetTotalILBytesJittedForMetadataMethods()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalILBytesJittedForMetadataMethods();
 }
 
 extern "C" size_t GetCurrentNumberOfMetadataMethodsJitted()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetCurrentNumberOfMetadataMethodsJitted();
 }
 
 extern "C" size_t GetTotalNumberOfMetadataMethodsJitted()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalNumberOfMetadataMethodsJitted();
 }
 
 extern "C" size_t GetTotalMachineCodeBytesGeneratedForMetadataMethods()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalMachineCodeBytesGeneratedForMetadataMethods();
 }
 
 /* Dynamic Method Counters */
 extern "C" size_t GetTotalILBytesJittedForDynamicMethods()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalILBytesJittedForDynamicMethods();
 }
 
 extern "C" size_t GetTotalMachineCodeBytesGeneratedForDynamicMethods()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalMachineCodeBytesGeneratedForDynamicMethods();
 }
 
 extern "C" size_t GetTotalNumberOfDynamicMethods()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalNumberOfDynamicMethods();
 }
 
 extern "C" size_t GetCurrentNumberOfDynamicMethods()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetCurrentNumberOfDynamicMethods();
 }
 
 /* Precompiled Method Counters */
 extern "C" size_t GetTotalCachedMethodsSearched()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalCachedMethodsSearched();
 }
 
 extern "C" size_t GetTotalCachedMethodsRestored()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalCachedMethodsRestored();
 }
 
 extern "C" size_t GetTotalCachedMethodsMachineCodeBytesRestored()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalCachedMethodsMachineCodeBytesRestored();
 }
 
 /* Runtime Suspension Counters */
 extern "C" size_t GetTotalNumberOfRuntimeSuspsensions()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalNumberOfRuntimeSuspsensions();
 }
 
 extern "C" size_t GetTotalNumberOfRuntimeSuspensionsForGC()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalNumberOfRuntimeSuspensionsForGC();
 }
 
 extern "C" size_t GetTotalNumberOfRuntimeSuspensionsForGCPrep()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalNumberOfRuntimeSuspensionsForGCPrep();
 }
 
 /* Type Loader Counters */
 extern "C" size_t GetCurrentNumberOfClassesLoaded()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetCurrentNumberOfClassesLoaded();
 }
 
 extern "C" size_t GetTotalNumberOfClassesLoaded()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalNumberOfClassesLoaded();
 }
 
 extern "C" size_t GetTotalNumberOfClassLoadFailures()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalNumberOfClassLoadFailures();
 }
 
 /* Assembly Loader Counters */
 extern "C" size_t GetCurrentNumberOfAssembliesLoaded()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetCurrentNumberOfAssembliesLoaded();
 }
 
 extern "C" size_t GetTotalNumberOfAssembliesLoaded()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalNumberOfAssembliesLoaded();
 }
 
 extern "C" size_t GetCurrentNumberOfModulesLoaded()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetCurrentNumberOfModulesLoaded();
 }
 
 extern "C" size_t GetTotalNumberOfModulesLoaded()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalNumberOfModulesLoaded();
 }
 
 /* Thread Counters */
 extern "C" size_t GetCurrentNumberOfLogicalThreads()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetCurrentNumberOfLogicalThreads();
 }
 
 /* GC Counters */
 extern "C" size_t GetTotalNumberOfInducedGarbageCollections()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalNumberOfInducedGarbageCollections();
 }
 
 extern "C" size_t GetTotalNumberOfGen0Collections()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalNumberOfGen0Collections();
 }
 
 extern "C" size_t GetTotalNumberOfGen1Collections()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalNumberOfGen1Collections();
 }
 
 extern "C" size_t GetTotalNumberOfGen2Collections()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalNumberOfGen2Collections();
 }
 
 extern "C" size_t GetTotalNumberOfBytesInAllHeaps()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalNumberOfBytesInAllHeaps();
 }
 
 extern "C" size_t GetGen0HeapSize()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetGen0HeapSize();
 }
 
 extern "C" size_t GetGen1HeapSize()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetGen1HeapSize();
 }
 
 extern "C" size_t GetGen2HeapSize()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetGen2HeapSize();
 }
 
 extern "C" size_t GetGen3HeapSize()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetGen3HeapSize();
 }
 
 extern "C" size_t GetFrozenHeapSize()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetFrozenHeapSize();
 }
 
 extern "C" size_t GetNumberOfGCSegments()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetNumberOfGCSegments();
 }
 
 extern "C" size_t GetNumberOfFrozenSegments()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetNumberOfFrozenSegments();
 }
 
 extern "C" size_t GetTotalNumberOfBytesAllocatedSinceLastGC()
 {
+    if (ProfilerInstance == nullptr)
+    {
+        return 0;
+    }
+
     return ProfilerInstance->GetTotalNumberOfBytesAllocatedSinceLastGC();
 }
 
