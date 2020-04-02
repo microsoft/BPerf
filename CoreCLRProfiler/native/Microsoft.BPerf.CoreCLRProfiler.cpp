@@ -54,11 +54,6 @@ extern "C" size_t GetCurrentNumberOfMetadataMethodsJitted()
         return 0;
     }
 
-    if (ProfilerInstance == nullptr)
-    {
-        return 0;
-    }
-
     return ProfilerInstance->GetCurrentNumberOfMetadataMethodsJitted();
 }
 
