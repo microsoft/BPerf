@@ -5,7 +5,7 @@
 
     public static class ProfilerInterop
     {
-        private const string dllName = "Microsoft.BPerf.CoreCLRProfiler.dll";
+        private const string dllName = "Microsoft.BPerf.CoreCLRProfiler";
 
         [DllImport(dllName)]
         public static extern IntPtr GetNumberOfExceptionsThrown();
