@@ -10,7 +10,7 @@ const char* Manifest = "<instrumentationManifest xmlns=\"http://schemas.microsof
 "  <events xmlns=\"http://schemas.microsoft.com/win/2004/08/events\">\n"
 "<provider name=\"BPerfCoreCLRProfilerEventSource\" guid=\"{5a0f8851-25a1-54b6-6a29-300728cd9b65}\" resourceFileName=\"BPerfCoreCLRProfilerEventSource\" messageFileName=\"BPerfCoreCLRProfilerEventSource\" symbol=\"BPerfCoreCLRProfilerEventSource\">\n"
 " <tasks>\n"
-"  <task name=\"LOHAllocation\" message=\"$(string.task_Log)\" value=\"1\"/>\n"
+"  <task name=\"ObjectAllocation\" message=\"$(string.task_Log)\" value=\"1\"/>\n"
 "  <task name=\"EventSourceMessage\" message=\"$(string.task_EventSourceMessage)\" value=\"65534\"/>\n"
 " </tasks>\n"
 " <opcodes>\n"
@@ -23,14 +23,14 @@ const char* Manifest = "<instrumentationManifest xmlns=\"http://schemas.microsof
 " </keywords>\n"
 " <events>\n"
 "  <event value=\"0\" version=\"0\" level=\"win:LogAlways\" symbol=\"EventSourceMessage\" task=\"EventSourceMessage\" template=\"EventSourceMessageArgs\"/>\n"
-"  <event value=\"1\" version=\"0\" level=\"win:LogAlways\" symbol=\"LOHAllocation\" task=\"LOHAllocation\" template=\"LOHAllocationArgs\"/>\n"
+"  <event value=\"1\" version=\"0\" level=\"win:LogAlways\" symbol=\"ObjectAllocation\" task=\"ObjectAllocation\" template=\"ObjectAllocationArgs\"/>\n"
 "  <event value=\"2\" version=\"0\" level=\"win:LogAlways\" symbol=\"TypeLoaded\" task=\"Log\" template=\"TypeLoadedArgs\"/>\n"
 " </events>\n"
 " <templates>\n"
 "  <template tid=\"EventSourceMessageArgs\">\n"
 "   <data name=\"message\" inType=\"win:UnicodeString\"/>\n"
 "  </template>\n"
-"  <template tid=\"LOHAllocationArgs\">\n"
+"  <template tid=\"ObjectAllocationArgs\">\n"
 "   <data name=\"moduleId\" inType=\"win:Pointer\"/>\n"
 "   <data name=\"typeDef\" inType=\"win:UInt32\"/>\n"
 "   <data name=\"size\" inType=\"win:UInt64\"/>\n"
@@ -118,7 +118,7 @@ static void BPerfEventEnableCallback(LPCGUID sourceId, ULONG isEnabled, UCHAR le
     WriteManifestEvent(RegHandle);
 }
 
-static ULONG ReportLOHAllocation(UINT_PTR moduleId, unsigned typeDef, size_t size)
+static ULONG ReportObjectAllocation(UINT_PTR moduleId, unsigned typeDef, size_t size)
 {
     EVENT_DESCRIPTOR descriptor;
     descriptor.Id = 1;

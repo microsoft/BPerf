@@ -51,7 +51,6 @@ jobs:
 
     steps:
 
-
     - task: CMake@1
       displayName: CMake
       inputs:
@@ -92,14 +91,14 @@ jobs:
     - task: DotNetCoreCLI@2
       displayName: 'dotnet build'
       inputs:
-        projects: '$(Build.SourcesDirectory)/CoreCLRProfiler/managed/Microsoft.BPerf.ProfilerInterop.csproj'
+        projects: '$(Build.SourcesDirectory)/CoreCLRProfiler/managed/Microsoft.BPerf.ProfilerInteropGenerator.csproj'
         arguments: '-c Release'
         workingDirectory: CoreCLRProfiler/managed
 
     - task: CopyFiles@2
       displayName: 'Copy Files to: $(Pipeline.Workspace)'
       inputs:
-        SourceFolder: '$(Build.SourcesDirectory)/CoreCLRProfiler/managed/bin/Release/netstandard2.0'
+        SourceFolder: '$(Build.SourcesDirectory)/CoreCLRProfiler/managed/bin/Release/netcoreapp3.1'
         Contents: Microsoft.BPerf.ProfilerInterop.dll
         TargetFolder: '$(Pipeline.Workspace)'
 

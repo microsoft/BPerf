@@ -13,6 +13,7 @@
 #define IfFailRet(EXPR) do { HRESULT hr = (EXPR); if(FAILED(hr)) { return (hr); } } while (0)
 
 #include <cstddef>
+#include <cstdlib>
 #include <atomic>
 #include <thread>
 #include <mutex>
@@ -174,6 +175,10 @@ public:
     size_t GetFrozenHeapSize() const;
     size_t GetNumberOfGCSegments() const;
     size_t GetNumberOfFrozenSegments() const;
+
+    /* Control APIs */
+    bool EnableObjectAllocationMonitoring();
+    bool DisableObjectAllocationMonitoring();
 
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override
     {

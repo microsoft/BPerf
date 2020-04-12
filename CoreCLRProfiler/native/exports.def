@@ -40,3 +40,5 @@ EXPORTS
     GetFrozenHeapSize
     GetNumberOfGCSegments
     GetNumberOfFrozenSegments
+    EnableObjectAllocationMonitoring
+    DisableObjectAllocationMonitoring

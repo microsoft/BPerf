@@ -89,19 +89,25 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Initialize(IUnknown* pICorProfi
         return E_FAIL;
     }
 
-    const DWORD eventsMask = COR_PRF_MONITOR_THREADS          |
-                             COR_PRF_MONITOR_SUSPENDS         |
-                             COR_PRF_MONITOR_MODULE_LOADS     |
-                             COR_PRF_MONITOR_CACHE_SEARCHES   |
-                             COR_PRF_MONITOR_JIT_COMPILATION  |
-                             COR_PRF_MONITOR_EXCEPTIONS       |
-                             COR_PRF_MONITOR_CLASS_LOADS      |
-                             COR_PRF_ENABLE_STACK_SNAPSHOT    |
-                             COR_PRF_MONITOR_ASSEMBLY_LOADS   ;
+    DWORD eventsMask = COR_PRF_MONITOR_THREADS          |
+                       COR_PRF_MONITOR_SUSPENDS         |
+                       COR_PRF_MONITOR_MODULE_LOADS     |
+                       COR_PRF_MONITOR_CACHE_SEARCHES   |
+                       COR_PRF_MONITOR_JIT_COMPILATION  |
+                       COR_PRF_MONITOR_EXCEPTIONS       |
+                       COR_PRF_MONITOR_CLASS_LOADS      |
+                       COR_PRF_ENABLE_STACK_SNAPSHOT    |
+                       COR_PRF_MONITOR_ASSEMBLY_LOADS   ;
 
     DWORD eventsHigh = COR_PRF_HIGH_MONITOR_LARGEOBJECT_ALLOCATED    |
                        COR_PRF_HIGH_MONITOR_DYNAMIC_FUNCTION_UNLOADS |
                        COR_PRF_HIGH_BASIC_GC                         ;
+
+    const char* monitorObjectAllocated = std::getenv("BPERF_MONITOR_OBJECT_ALLOCATED");
+    if (monitorObjectAllocated != nullptr && std::string(monitorObjectAllocated) == std::string("1"))
+    {
+        eventsMask |= COR_PRF_MONITOR_OBJECT_ALLOCATED;
+    }
 
 #ifdef _WINDOWS
     RegisterToETW();
@@ -442,7 +448,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::ObjectAllocated(ObjectID object
     size_t size;
     IfFailRet(this->corProfilerInfo->GetClassIDInfo2(classId, &moduleId, &typeDef, nullptr, 0, nullptr, nullptr));
     IfFailRet(this->corProfilerInfo->GetObjectSize2(objectId, &size));
-    ReportLOHAllocation(moduleId, typeDef, size); // at the moment if we ever get this called it is back of LOH. This is because eventsHigh is restricting it.
+    ReportObjectAllocation(moduleId, typeDef, size);
 #endif
     return S_OK;
 }
@@ -961,4 +967,20 @@ size_t BPerfProfilerCallback::GetNumberOfGCSegments() const
 size_t BPerfProfilerCallback::GetNumberOfFrozenSegments() const
 {
     return this->numberOfFrozenSegments;
+}
+
+bool BPerfProfilerCallback::EnableObjectAllocationMonitoring()
+{
+    DWORD eventsLow, eventsHigh;
+    this->corProfilerInfo->GetEventMask2(&eventsLow, &eventsHigh);
+    eventsLow |= (COR_PRF_ENABLE_OBJECT_ALLOCATED);
+    return this->corProfilerInfo->SetEventMask2(eventsLow, eventsHigh) == S_OK;
+}
+
+bool BPerfProfilerCallback::DisableObjectAllocationMonitoring()
+{
+    DWORD eventsLow, eventsHigh;
+    this->corProfilerInfo->GetEventMask2(&eventsLow, &eventsHigh);
+    eventsLow &= ~(COR_PRF_ENABLE_OBJECT_ALLOCATED);
+    return this->corProfilerInfo->SetEventMask2(eventsLow, eventsHigh) == S_OK;
 }

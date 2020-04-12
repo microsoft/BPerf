@@ -394,6 +394,26 @@ extern "C" size_t GetTotalNumberOfBytesAllocatedSinceLastGC()
     return ProfilerInstance->GetTotalNumberOfBytesAllocatedSinceLastGC();
 }
 
+extern "C" bool EnableObjectAllocationMonitoring()
+{
+    if (ProfilerInstance == nullptr)
+    {
+        return false;
+    }
+
+    return ProfilerInstance->EnableObjectAllocationMonitoring();
+}
+
+extern "C" bool DisableObjectAllocationMonitoring()
+{
+    if (ProfilerInstance == nullptr)
+    {
+        return false;
+    }
+
+    return ProfilerInstance->DisableObjectAllocationMonitoring();
+}
+
 class ClassFactory : public IClassFactory
 {
 private:
