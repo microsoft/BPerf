@@ -222,7 +222,7 @@ public:
 private:
 
     std::atomic<int> refCount;
-    ICorProfilerInfo10* corProfilerInfo;
+    ICorProfilerInfo11* corProfilerInfo;
 
     /* Exception Counters */
     std::atomic<size_t> numberOfExceptionsThrown;

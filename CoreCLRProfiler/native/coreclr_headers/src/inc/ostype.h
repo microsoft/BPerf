@@ -16,15 +16,15 @@
 //*****************************************************************************
 // Enum to track which version of the OS we are running
 // Note that NT5 (Win2k) is the minimum supported platform. Any code using
-// utilcode (which includes the CLR's execution engine) will fail to start 
+// utilcode (which includes the CLR's execution engine) will fail to start
 // on a pre-Win2k platform. This is enforced by InitRunningOnVersionStatus.
-// 
+//
 // Note: The value is used for data mining from links clicked by user in shim dialog - see code:FWLinkTemplateFromTextID
 //   Please do not modify existing values, adding new ones is fine.
 //*****************************************************************************
 typedef enum {
-    RUNNING_ON_STATUS_UNINITED = 0, 
-    RUNNING_ON_WIN7            = 1, 
+    RUNNING_ON_STATUS_UNINITED = 0,
+    RUNNING_ON_WIN7            = 1,
     RUNNING_ON_WIN8            = 2
 } RunningOnStatusEnum;
 
@@ -52,7 +52,7 @@ void InitWinRTStatus();
 inline BOOL RunningOnWin8()
 {
     WRAPPER_NO_CONTRACT;
-#if (!defined(_X86_) && !defined(_AMD64_)) || defined(CROSSGEN_COMPILE)
+#if (!defined(HOST_X86) && !defined(HOST_AMD64)) || defined(CROSSGEN_COMPILE)
     return TRUE;
 #else
     if (gRunningOnStatus == RUNNING_ON_STATUS_UNINITED)
@@ -78,7 +78,7 @@ inline BOOL WinRTSupported()
     STATIC_CONTRACT_NOTHROW;
     STATIC_CONTRACT_GC_NOTRIGGER;
     STATIC_CONTRACT_CANNOT_TAKE_LOCK;
-    
+
 #ifdef CROSSGEN_COMPILE
     return TRUE;
 #endif
@@ -94,7 +94,7 @@ inline BOOL WinRTSupported()
 
 #endif // FEATURE_COMINTEROP
 
-#ifdef _WIN64
+#ifdef HOST_64BIT
 inline BOOL RunningInWow64()
 {
     return FALSE;

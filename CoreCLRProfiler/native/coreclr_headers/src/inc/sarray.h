@@ -12,13 +12,13 @@
 #include "sbuffer.h"
 
 // --------------------------------------------------------------------------------
-// SArray is a typed array wrapper around an SBuffer.  It manages individual 
+// SArray is a typed array wrapper around an SBuffer.  It manages individual
 // constructors and destructors of array elements if avaiable, as well as providing
 // typed access.
 // --------------------------------------------------------------------------------
 
 template <typename ELEMENT, BOOL BITWISE_COPY = TRUE>
-class SArray 
+class SArray
 {
   private:
 
@@ -81,7 +81,7 @@ class SArray
         *Append() = elem;
         return elem;
     }
-    
+
     void Insert(const Iterator &i);
     void Delete(const Iterator &i);
 
@@ -123,8 +123,8 @@ class SArray
 
  public:
 
-    class Iterator : public CheckedIteratorBase<SArray<ELEMENT, BITWISE_COPY> >, 
-                     public Indexer<ELEMENT, Iterator>
+    class EMPTY_BASES_DECL Iterator : public CheckedIteratorBase<SArray<ELEMENT, BITWISE_COPY> >,
+                                      public Indexer<ELEMENT, Iterator>
     {
         friend class SArray;
         friend class Indexer<ELEMENT, Iterator>;
@@ -132,7 +132,7 @@ class SArray
         SBuffer::Iterator m_i;
 
       public:
-        
+
         Iterator(SArray *array, SCOUNT_T index)
           : CheckedIteratorBase<SArray<ELEMENT, BITWISE_COPY> >(array)
         {
@@ -180,7 +180,7 @@ class SArray
   private:
 
     //--------------------------------------------------------------------
-    // Routines for managing the buffer content.  
+    // Routines for managing the buffer content.
     //--------------------------------------------------------------------
 
     void ConstructBuffer(const Iterator &i, COUNT_T size);
@@ -193,10 +193,10 @@ class SArray
 // ================================================================================
 
 template <typename ELEMENT, COUNT_T SIZE, BOOL BITWISE_COPY = TRUE>
-class InlineSArray : public SArray<ELEMENT, BITWISE_COPY>
+class EMPTY_BASES_DECL InlineSArray : public SArray<ELEMENT, BITWISE_COPY>
 {
  private:
-#ifdef _MSC_VER
+#ifdef TARGET_WINDOWS
 #pragma warning(push)
 #pragma warning(disable:4200) // zero sized array
 #pragma warning(disable:4324) // don't complain if DECLSPEC_ALIGN actually pads
@@ -216,9 +216,9 @@ class InlineSArray : public SArray<ELEMENT, BITWISE_COPY>
 // ================================================================================
 
 template <typename ELEMENT, BOOL BITWISE_COPY = TRUE>
-class StackSArray : public InlineSArray<ELEMENT, STACK_ALLOC/sizeof(ELEMENT), BITWISE_COPY>
+class EMPTY_BASES_DECL StackSArray : public InlineSArray<ELEMENT, STACK_ALLOC/sizeof(ELEMENT), BITWISE_COPY>
 {
-}; 
+};
 
 // ================================================================================
 // Inline definitions

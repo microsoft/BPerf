@@ -83,7 +83,7 @@ class CeeFileGenWriter : public CCeeGen
     HRESULT allocateIAT();
 public:
     // Create with one of these two methods, not operator new
-    static HRESULT CreateNewInstance(CCeeGen *pCeeFileGenFrom, CeeFileGenWriter* & pGenWriter, 
+    static HRESULT CreateNewInstance(CCeeGen *pCeeFileGenFrom, CeeFileGenWriter* & pGenWriter,
                                         DWORD createFlags = ICEE_CREATE_FILE_PURE_IL);
     // See ICeeFileGen.h for the definition of the bits used in createFlags
     static HRESULT CreateNewInstanceEx(CCeeGen *pCeeFileGenFrom, CeeFileGenWriter* & pGenWriter,
@@ -189,7 +189,10 @@ inline LPWSTR CeeFileGenWriter::getResourceFileName() {
 }
 
 inline HRESULT CeeFileGenWriter::setDllSwitch(bool dllSwitch) {
-    if((m_dllSwitch = dllSwitch)) m_objSwitch = FALSE; return S_OK;
+    if((m_dllSwitch = dllSwitch))
+        m_objSwitch = FALSE;
+
+    return S_OK;
 }
 
 inline bool CeeFileGenWriter::getDllSwitch() {
@@ -197,7 +200,10 @@ inline bool CeeFileGenWriter::getDllSwitch() {
 }
 
 inline HRESULT CeeFileGenWriter::setObjSwitch(bool objSwitch) {
-    if((m_objSwitch = objSwitch)) m_dllSwitch = FALSE; return S_OK;
+    if((m_objSwitch = objSwitch))
+        m_dllSwitch = FALSE;
+
+    return S_OK;
 }
 
 inline bool CeeFileGenWriter::getObjSwitch() {

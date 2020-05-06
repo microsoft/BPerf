@@ -82,7 +82,7 @@ BPerfProfilerCallback::~BPerfProfilerCallback()
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
-    const HRESULT queryInterfaceResult = pICorProfilerInfoUnk->QueryInterface(__uuidof(ICorProfilerInfo10), reinterpret_cast<void**>(&this->corProfilerInfo));
+    const HRESULT queryInterfaceResult = pICorProfilerInfoUnk->QueryInterface(__uuidof(ICorProfilerInfo11), reinterpret_cast<void**>(&this->corProfilerInfo));
 
     if (FAILED(queryInterfaceResult))
     {

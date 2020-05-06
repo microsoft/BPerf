@@ -24,7 +24,7 @@
 // - It is not possible to directly use the local variables in the filter.
 // All the local information that the filter has to need to know about should
 // be passed through pv parameter
-//  
+//
 // - Do not use goto to jump out of the PAL_TRY block
 // (jumping out of the try block is not a good idea even on Win32, because of
 // it causes stack unwind)
@@ -46,7 +46,7 @@
 //   ....
 // }
 // WIN_PAL_ENDTRY
-// 
+//
 //
 // LONG MyFilter(PEXCEPTION_POINTERS *pExceptionInfo, PVOID pv)
 // {
@@ -85,7 +85,7 @@
 
 
 
-#if defined(_DEBUG_IMPL) && !defined(JIT_BUILD) && !defined(JIT64_BUILD) && !defined(_ARM_) // @ARMTODO
+#if defined(_DEBUG_IMPL) && !defined(JIT_BUILD) && !defined(HOST_ARM) // @ARMTODO
 #define WIN_PAL_TRY_HANDLER_DBG_BEGIN                                           \
     BOOL ___oldOkayToThrowValue = FALSE;                                        \
     ClrDebugState *___pState = GetClrDebugState();                              \
@@ -132,13 +132,13 @@
 #define WIN_PAL_TRY_HANDLER_DBG_BEGIN                   ANNOTATION_TRY_BEGIN;
 #define WIN_PAL_TRY_HANDLER_DBG_BEGIN_DLLMAIN(_reason)  ANNOTATION_TRY_BEGIN;
 #define WIN_PAL_TRY_HANDLER_DBG_END                     ANNOTATION_TRY_END;
-#define WIN_PAL_ENDTRY_NAKED_DBG                                                          
-#endif // defined(ENABLE_CONTRACTS_IMPL) && !defined(JIT64_BUILD)
+#define WIN_PAL_ENDTRY_NAKED_DBG
+#endif // defined(ENABLE_CONTRACTS_IMPL)
 
-#if !defined (FEATURE_PAL)
+#if defined(HOST_WINDOWS)
 // Native system libray handle.
 // In Windows, NATIVE_LIBRARY_HANDLE is the same as HMODULE.
 typedef HMODULE NATIVE_LIBRARY_HANDLE;
-#endif // !FEATURE_PAL
+#endif // HOST_WINDOWS
 
 #endif	// __PALCLR_WIN_H__

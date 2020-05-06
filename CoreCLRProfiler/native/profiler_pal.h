@@ -17,8 +17,6 @@
 #include "pal.h"
 #include "ntimage.h"
 #include "corhdr.h"
-#define CoTaskMemAlloc(cb) malloc(cb)
-#define CoTaskMemFree(cb) free(cb)
 
 #else
 
