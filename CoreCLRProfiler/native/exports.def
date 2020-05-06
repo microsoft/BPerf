@@ -37,6 +37,7 @@ EXPORTS
     GetGen1HeapSize
     GetGen2HeapSize
     GetGen3HeapSize
+    GetPinnedObjectHeapSize
     GetFrozenHeapSize
     GetNumberOfGCSegments
     GetNumberOfFrozenSegments
