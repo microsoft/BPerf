@@ -91,6 +91,7 @@ namespace Microsoft.BPerf.BuildTools
             CreatePInvokeImpl(metadataBuilder, "GetGen1HeapSize", moduleReferenceHandle, ref methodIndex);
             CreatePInvokeImpl(metadataBuilder, "GetGen2HeapSize", moduleReferenceHandle, ref methodIndex);
             CreatePInvokeImpl(metadataBuilder, "GetGen3HeapSize", moduleReferenceHandle, ref methodIndex);
+            CreatePInvokeImpl(metadataBuilder, "GetPinnedObjectHeapSize", moduleReferenceHandle, ref methodIndex);
             CreatePInvokeImpl(metadataBuilder, "GetFrozenHeapSize", moduleReferenceHandle, ref methodIndex);
             CreatePInvokeImpl(metadataBuilder, "GetNumberOfGCSegments", moduleReferenceHandle, ref methodIndex);
             CreatePInvokeImpl(metadataBuilder, "GetNumberOfFrozenSegments", moduleReferenceHandle, ref methodIndex);

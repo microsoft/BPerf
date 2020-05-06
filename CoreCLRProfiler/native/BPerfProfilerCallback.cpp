@@ -65,6 +65,7 @@ BPerfProfilerCallback::BPerfProfilerCallback()
     this->gen1HeapSize = 0;
     this->gen2HeapSize = 0;
     this->gen3HeapSize = 0; // LOH
+    this->pinnedObjectHeapSize = 0;
     this->frozenHeapSize = 0;
 
     this->numberOfGCSegments = 0;
@@ -617,7 +618,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::SurvivingReferences(ULONG cSurv
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::GarbageCollectionFinished()
 {
-    size_t generationSizes[4] = { 0, 0, 0, 0 };
+    size_t generationSizes[5] = { 0, 0, 0, 0, 0 };
     size_t frozenSegmentsSize = 0;
 
     ULONG cObjectRanges = 0;
@@ -649,9 +650,10 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::GarbageCollectionFinished()
     this->gen1HeapSize = generationSizes[COR_PRF_GC_GEN_1];
     this->gen2HeapSize = generationSizes[COR_PRF_GC_GEN_2];
     this->gen3HeapSize = generationSizes[COR_PRF_GC_LARGE_OBJECT_HEAP];
+    this->pinnedObjectHeapSize = generationSizes[COR_PRF_GC_PINNED_OBJECT_HEAP];
     this->frozenHeapSize = frozenSegmentsSize;
 
-    this->totalNumberOfBytesInAllHeaps = generationSizes[COR_PRF_GC_GEN_0] + generationSizes[COR_PRF_GC_GEN_1] + generationSizes[COR_PRF_GC_GEN_2] + generationSizes[COR_PRF_GC_LARGE_OBJECT_HEAP] + frozenSegmentsSize;
+    this->totalNumberOfBytesInAllHeaps = generationSizes[COR_PRF_GC_GEN_0] + generationSizes[COR_PRF_GC_GEN_1] + generationSizes[COR_PRF_GC_GEN_2] + generationSizes[COR_PRF_GC_LARGE_OBJECT_HEAP] + generationSizes[COR_PRF_GC_PINNED_OBJECT_HEAP] + frozenSegmentsSize;
 
     return S_OK;
 }
@@ -952,6 +954,11 @@ size_t BPerfProfilerCallback::GetGen2HeapSize() const
 size_t BPerfProfilerCallback::GetGen3HeapSize() const
 {
     return this->gen3HeapSize;
+}
+
+size_t BPerfProfilerCallback::GetPinnedObjectHeapSize() const
+{
+    return this->pinnedObjectHeapSize;
 }
 
 size_t BPerfProfilerCallback::GetFrozenHeapSize() const
