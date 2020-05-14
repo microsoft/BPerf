@@ -40,6 +40,7 @@ National Institute of Standards and Technology (NIST).
 
 */
 
+#define _ASSERTE(x)
 #define MODE_ANY
 #define SO_TOLERANT
 #define GC_NOTRIGGER

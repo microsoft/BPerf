@@ -8,6 +8,7 @@
 //
 //*****************************************************************************
 
+#define _alloca alloca
 #include "profiler_pal.h"
 #include "corhlpr.h"
 #include "CQuickBytes.h"
