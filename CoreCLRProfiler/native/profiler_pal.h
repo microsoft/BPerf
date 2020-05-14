@@ -2,7 +2,6 @@
 
 #ifndef _WINDOWS
 
-#define _ASSERTE(x)
 #define PAL_STDCPP_COMPAT
 #define UNICODE
 #define FEATURE_PAL
@@ -10,6 +9,7 @@
 
 #if INTPTR_MAX == INT64_MAX
 #define BIT64
+#define HOST_64BIT
 #endif
 
 #include <cstdlib>
