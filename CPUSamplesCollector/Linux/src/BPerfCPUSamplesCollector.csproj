@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <CodeAnalysisRuleSet>..\default.ruleset</CodeAnalysisRuleSet>
+    <GenStringMapExePath>$(MSBuildThisFileDirectory)..\obj\GenStringMap\$(Configuration)\$(TargetFramework)\GenStringMap.dll</GenStringMapExePath>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <IlcInvariantGlobalization>true</IlcInvariantGlobalization>
+    <RootAllApplicationAssemblies>false</RootAllApplicationAssemblies>
+    <IlcGenerateCompleteTypeMetadata>false</IlcGenerateCompleteTypeMetadata>
+    <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
+    <IlcDisableReflection>true</IlcDisableReflection>
+    <IlcOptimizationPreference>Speed</IlcOptimizationPreference>
+    <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="BPF\BPFCmd.cs" />
+    <Compile Include="BPF\BPFCreateMapAttr.cs" />
+    <Compile Include="BPF\BPFFuncId.cs" />
+    <Compile Include="BPF\BPFJumpEncoding.cs" />
+    <Compile Include="BPF\BPFMapType.cs" />
+    <Compile Include="BPF\BPFObjAttr.cs" />
+    <Compile Include="BPF\BPFProgLoadAttr.cs" />
+    <Compile Include="BPF\BPFProgType.cs" />
+    <Compile Include="BPF\BPFRegister.cs" />
+    <Compile Include="BPF\BPFUpdateMapAttr.cs" />
+    <Compile Include="EPoll\EPollEvent.cs" />
+    <Compile Include="EPoll\EPollFlags.cs" />
+    <Compile Include="LinuxFileDescriptor.cs" />
+    <Compile Include="PerfEventDescriptors.cs" />
+    <Compile Include="ReadOnlyLinuxFile.cs" />
+    <Compile Include="PerfEvents\ClockConstants.cs" />
+    <Compile Include="PerfEvents\PerfBranchSampleType.cs" />
+    <Compile Include="PerfEvents\PerfEventAttr.cs" />
+    <Compile Include="PerfEvents\PerfEventAttrFlags.cs" />
+    <Compile Include="PerfEvents\PerfEventBreakpointType.cs" />
+    <Compile Include="PerfEvents\PerfEventHeader.cs" />
+    <Compile Include="PerfEvents\PerfEventMMapPage.cs" />
+    <Compile Include="PerfEvents\PerfEventReadFormat.cs" />
+    <Compile Include="PerfEvents\PerfEventSampleFormat.cs" />
+    <Compile Include="PerfEvents\PerfEventType.cs" />
+    <Compile Include="PerfEvents\PerfRecordType.cs" />
+    <Compile Include="PerfEvents\PerfTypeSpecificConfig.cs" />
+    <Compile Include="RingBuffer.cs" />
+    <Compile Include="RLimit\RLimit.cs" />
+    <Compile Include="BPerfEvent.cs" />
+    <Compile Include="NativeMethods.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="StatX\StatX.cs" />
+    <Compile Include="StatX\StatXTimestamp.cs" />
+    <Compile Include="StringMap.cs" />
+    <Compile Include="RingBuffers.cs" />
+    <None Include="Strings.resx" IsStringMap="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="stacks.ebpf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="InvokeBuildTools" BeforeTargets="CoreCompile">
+    <Exec WorkingDirectory="$(MSBuildThisFileDirectory)../tools" Command="dotnet run $(GenStringMapExePath) $(MSBuildThisFileDirectory)Strings.resx $(MSBuildThisFileDirectory)\StringMap.cs BPerfCPUSamplesCollector Strings" />
+  </Target>
+
+</Project>

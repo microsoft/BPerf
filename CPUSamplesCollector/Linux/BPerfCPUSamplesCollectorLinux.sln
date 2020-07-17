@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29728.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BPerfCPUSamplesCollector", "src\BPerfCPUSamplesCollector.csproj", "{BF2DB760-D869-494F-89C6-A2398C0696E4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A1D72B6D-47CA-476C-84DD-C10AC119DEAC}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenStringMap", "tools\GenStringMap.csproj", "{D2810100-97F3-47BD-A940-EB035DD7B8A2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BF2DB760-D869-494F-89C6-A2398C0696E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF2DB760-D869-494F-89C6-A2398C0696E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF2DB760-D869-494F-89C6-A2398C0696E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF2DB760-D869-494F-89C6-A2398C0696E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2810100-97F3-47BD-A940-EB035DD7B8A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2810100-97F3-47BD-A940-EB035DD7B8A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2810100-97F3-47BD-A940-EB035DD7B8A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2810100-97F3-47BD-A940-EB035DD7B8A2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2435A09F-EF4F-4C39-9190-E652E06D1298}
+	EndGlobalSection
+EndGlobal
