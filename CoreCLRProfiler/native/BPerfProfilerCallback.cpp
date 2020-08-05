@@ -72,14 +72,7 @@ BPerfProfilerCallback::BPerfProfilerCallback()
     this->numberOfFrozenSegments = 0;
 }
 
-BPerfProfilerCallback::~BPerfProfilerCallback()
-{
-    if (this->corProfilerInfo != nullptr)
-    {
-        this->corProfilerInfo->Release();
-        this->corProfilerInfo = nullptr;
-    }
-}
+BPerfProfilerCallback::~BPerfProfilerCallback() = default;
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
 {
@@ -100,9 +93,9 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Initialize(IUnknown* pICorProfi
                        COR_PRF_ENABLE_STACK_SNAPSHOT    |
                        COR_PRF_MONITOR_ASSEMBLY_LOADS   ;
 
-    DWORD eventsHigh = COR_PRF_HIGH_MONITOR_LARGEOBJECT_ALLOCATED    |
-                       COR_PRF_HIGH_MONITOR_DYNAMIC_FUNCTION_UNLOADS |
-                       COR_PRF_HIGH_BASIC_GC                         ;
+    const DWORD eventsHigh = COR_PRF_HIGH_MONITOR_LARGEOBJECT_ALLOCATED    |
+                             COR_PRF_HIGH_MONITOR_DYNAMIC_FUNCTION_UNLOADS |
+                             COR_PRF_HIGH_BASIC_GC                         ;
 
     const char* monitorObjectAllocated = std::getenv("BPERF_MONITOR_OBJECT_ALLOCATED");
     if (monitorObjectAllocated != nullptr && std::string(monitorObjectAllocated) == std::string("1"))
@@ -123,9 +116,11 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Shutdown()
     UnregisterFromETW();
 #endif
 
-    if (this->corProfilerInfo != nullptr)
+    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+
+    if (tmp != nullptr)
     {
-        this->corProfilerInfo->Release();
+        tmp->Release();
         this->corProfilerInfo = nullptr;
     }
 
@@ -258,16 +253,19 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITCompilationFinished(Function
 
     ModuleID moduleId;
     mdToken token;
-    IfFailRet(this->corProfilerInfo->GetFunctionInfo(functionId, nullptr, &moduleId, &token));
+
+    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+    IfFailRet(tmp->GetFunctionInfo(functionId, nullptr, &moduleId, &token));
 
     ULONG cbMethodSize;
-    IfFailRet(this->corProfilerInfo->GetILFunctionBody(moduleId, token, nullptr, &cbMethodSize));
+
+    IfFailRet(tmp->GetILFunctionBody(moduleId, token, nullptr, &cbMethodSize));
     this->totalILBytesJitted += cbMethodSize;
 
     ULONG32 cCodeInfos;
-    IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, 0, &cCodeInfos, nullptr));
+    IfFailRet(tmp->GetCodeInfo2(functionId, 0, &cCodeInfos, nullptr));
     std::vector<COR_PRF_CODE_INFO> codeInfos(cCodeInfos);
-    IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, cCodeInfos, &cCodeInfos, codeInfos.data()));
+    IfFailRet(tmp->GetCodeInfo2(functionId, cCodeInfos, &cCodeInfos, codeInfos.data()));
 
     size_t codeSize = 0;
     for (auto &s : codeInfos)
@@ -289,14 +287,25 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITCachedFunctionSearchStarted(
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITCachedFunctionSearchFinished(FunctionID functionId, COR_PRF_JIT_CACHE result)
 {
+    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+
+    // Bail out early, so you don't end up causing an SO if for whatever reason this->corProfilerInfo is null.
+    // CoreCLR's filter wants to throw an AccessViolation exception, which is not yet restored, so it tries to restore that
+    // which in turn calls this function, so on and so forth ...
+    if (tmp == nullptr)
+    {
+        return S_OK;
+    }
+
     if (result == COR_PRF_CACHED_FUNCTION_FOUND)
     {
         ++this->totalCachedMethodsRestored;
 
         ULONG32 cCodeInfos;
-        IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, 0, &cCodeInfos, nullptr));
+
+        IfFailRet(tmp->GetCodeInfo2(functionId, 0, &cCodeInfos, nullptr));
         std::vector<COR_PRF_CODE_INFO> codeInfos(cCodeInfos);
-        IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, cCodeInfos, &cCodeInfos, codeInfos.data()));
+        IfFailRet(tmp->GetCodeInfo2(functionId, cCodeInfos, &cCodeInfos, codeInfos.data()));
 
         size_t codeSize = 0;
         for (auto& s : codeInfos)
@@ -444,11 +453,13 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::MovedReferences(ULONG cMovedObj
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::ObjectAllocated(ObjectID objectId, ClassID classId)
 {
 #ifdef _WINDOWS
+    ICorProfilerInfo11* tmp = this->corProfilerInfo;
     ModuleID moduleId;
     mdTypeDef typeDef;
     size_t size;
-    IfFailRet(this->corProfilerInfo->GetClassIDInfo2(classId, &moduleId, &typeDef, nullptr, 0, nullptr, nullptr));
-    IfFailRet(this->corProfilerInfo->GetObjectSize2(objectId, &size));
+
+    IfFailRet(tmp->GetClassIDInfo2(classId, &moduleId, &typeDef, nullptr, 0, nullptr, nullptr));
+    IfFailRet(tmp->GetObjectSize2(objectId, &size));
     ReportObjectAllocation(moduleId, typeDef, size);
 #endif
     return S_OK;
@@ -596,9 +607,11 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::GarbageCollectionStarted(int cG
     }
 
     ULONG cObjectRanges = 0;
-    IfFailRet(this->corProfilerInfo->GetGenerationBounds(0, &cObjectRanges, nullptr));
+
+    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+    IfFailRet(tmp->GetGenerationBounds(0, &cObjectRanges, nullptr));
     std::vector<COR_PRF_GC_GENERATION_RANGE> objectRanges(cObjectRanges);
-    IfFailRet(this->corProfilerInfo->GetGenerationBounds(cObjectRanges, &cObjectRanges, objectRanges.data()));
+    IfFailRet(tmp->GetGenerationBounds(cObjectRanges, &cObjectRanges, objectRanges.data()));
 
     size_t sum = 0;
     for (auto& s : objectRanges)
@@ -622,15 +635,17 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::GarbageCollectionFinished()
     size_t frozenSegmentsSize = 0;
 
     ULONG cObjectRanges = 0;
-    IfFailRet(this->corProfilerInfo->GetGenerationBounds(0, &cObjectRanges, nullptr));
+
+    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+    IfFailRet(tmp->GetGenerationBounds(0, &cObjectRanges, nullptr));
     std::vector<COR_PRF_GC_GENERATION_RANGE> objectRanges(cObjectRanges);
-    IfFailRet(this->corProfilerInfo->GetGenerationBounds(cObjectRanges, &cObjectRanges, objectRanges.data()));
+    IfFailRet(tmp->GetGenerationBounds(cObjectRanges, &cObjectRanges, objectRanges.data()));
 
     size_t frozenSegmentCount = 0;
     for (auto &s : objectRanges)
     {
         BOOL bFrozen = FALSE;
-        this->corProfilerInfo->IsFrozenObject(s.rangeStart, &bFrozen);
+        tmp->IsFrozenObject(s.rangeStart, &bFrozen);
 
         if (bFrozen)
         {
@@ -751,9 +766,11 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::DynamicMethodJITCompilationStar
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::DynamicMethodJITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock)
 {
     ULONG32 cCodeInfos;
-    IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, 0, &cCodeInfos, nullptr));
+
+    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+    IfFailRet(tmp->GetCodeInfo2(functionId, 0, &cCodeInfos, nullptr));
     std::vector<COR_PRF_CODE_INFO> codeInfos(cCodeInfos);
-    IfFailRet(this->corProfilerInfo->GetCodeInfo2(functionId, cCodeInfos, &cCodeInfos, codeInfos.data()));
+    IfFailRet(tmp->GetCodeInfo2(functionId, cCodeInfos, &cCodeInfos, codeInfos.data()));
 
     size_t codeSize = 0;
     for (auto& s : codeInfos)
@@ -976,18 +993,22 @@ size_t BPerfProfilerCallback::GetNumberOfFrozenSegments() const
     return this->numberOfFrozenSegments;
 }
 
-bool BPerfProfilerCallback::EnableObjectAllocationMonitoring()
+bool BPerfProfilerCallback::EnableObjectAllocationMonitoring() const
 {
     DWORD eventsLow, eventsHigh;
-    this->corProfilerInfo->GetEventMask2(&eventsLow, &eventsHigh);
+
+    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+    tmp->GetEventMask2(&eventsLow, &eventsHigh);
     eventsLow |= (COR_PRF_ENABLE_OBJECT_ALLOCATED);
-    return this->corProfilerInfo->SetEventMask2(eventsLow, eventsHigh) == S_OK;
+    return tmp->SetEventMask2(eventsLow, eventsHigh) == S_OK;
 }
 
-bool BPerfProfilerCallback::DisableObjectAllocationMonitoring()
+bool BPerfProfilerCallback::DisableObjectAllocationMonitoring() const
 {
     DWORD eventsLow, eventsHigh;
-    this->corProfilerInfo->GetEventMask2(&eventsLow, &eventsHigh);
+
+    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+    tmp->GetEventMask2(&eventsLow, &eventsHigh);
     eventsLow &= ~(COR_PRF_ENABLE_OBJECT_ALLOCATED);
-    return this->corProfilerInfo->SetEventMask2(eventsLow, eventsHigh) == S_OK;
+    return tmp->SetEventMask2(eventsLow, eventsHigh) == S_OK;
 }
