@@ -111,18 +111,9 @@ jobs:
         versioningScheme: byBuildNumber
 
     - task: NuGetCommand@2
-      displayName: 'NuGet push to internal feed'
-      inputs:
-        command: push
-        packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-        nuGetFeedType: external
-        publishFeedCredentials: 'msasg-Bing'
-        allowPackageConflicts: true
-
-    - task: NuGetCommand@2
       displayName: 'NuGet push'
       inputs:
         command: push
         packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-        publishVstsFeed: '2d0df07a-afe8-4771-8f48-456a7852cafd/a75f75b3-5627-4efb-a6f9-26c9ae81a223'
+        publishVstsFeed: 'BPerf/BPerf'
         allowPackageConflicts: true

@@ -181,8 +181,7 @@ namespace Microsoft.BPerf.BuildTools
                     parameters.AddParameter().Type().Int32();
                 });
 
-            metadataBuilder.AddParameter(ParameterAttributes.None, metadataBuilder.GetOrAddString("generation"), 1);
-            metadataBuilder.AddMethodDefinition(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Static, MethodImplAttributes.IL | MethodImplAttributes.Managed, metadataBuilder.GetOrAddString("GetGenerationSize"), metadataBuilder.GetOrAddBlob(signatureBuilder), bodyOffset, parameterList: MetadataTokens.ParameterHandle(1));
+            metadataBuilder.AddMethodDefinition(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Static, MethodImplAttributes.IL | MethodImplAttributes.Managed, metadataBuilder.GetOrAddString("GetGenerationSize"), metadataBuilder.GetOrAddBlob(signatureBuilder), bodyOffset, parameterList: default);
         }
 
         private static void CreateNoArgsThunkMethod(MetadataBuilder metadataBuilder, BlobBuilder codeBuilder, MemberReferenceHandle memberReferenceHandle, string methodName, TypeCode type)
@@ -224,7 +223,7 @@ namespace Microsoft.BPerf.BuildTools
                     {
                     });
 
-            metadataBuilder.AddMethodDefinition(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Static, MethodImplAttributes.IL | MethodImplAttributes.Managed, metadataBuilder.GetOrAddString(methodName), metadataBuilder.GetOrAddBlob(signatureBuilder), bodyOffset, parameterList: MetadataTokens.ParameterHandle(2));
+            metadataBuilder.AddMethodDefinition(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Static, MethodImplAttributes.IL | MethodImplAttributes.Managed, metadataBuilder.GetOrAddString(methodName), metadataBuilder.GetOrAddBlob(signatureBuilder), bodyOffset, parameterList: default);
         }
 
         private static void CreatePInvokeImpl2(MetadataBuilder metadataBuilder, string methodName)
@@ -243,7 +242,7 @@ namespace Microsoft.BPerf.BuildTools
                     });
 
 
-            metadataBuilder.AddMethodDefinition(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Static | MethodAttributes.PinvokeImpl, MethodImplAttributes.IL | MethodImplAttributes.PreserveSig | MethodImplAttributes.Managed, metadataBuilder.GetOrAddString(methodName), metadataBuilder.GetOrAddBlob(signatureBuilder), -1, parameterList: MetadataTokens.ParameterHandle(2));
+            metadataBuilder.AddMethodDefinition(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Static | MethodAttributes.PinvokeImpl, MethodImplAttributes.IL | MethodImplAttributes.PreserveSig | MethodImplAttributes.Managed, metadataBuilder.GetOrAddString(methodName), metadataBuilder.GetOrAddBlob(signatureBuilder), -1, parameterList: default);
         }
 
         private static void CreatePInvokeImpl(MetadataBuilder metadataBuilder, string methodName, ModuleReferenceHandle moduleReferenceHandle, ref int methodRowIndex)
@@ -346,9 +345,7 @@ namespace Microsoft.BPerf.BuildTools
                     parameters.AddParameter().Type().String();
                 });
 
-            metadataBuilder.AddParameter(ParameterAttributes.None, metadataBuilder.GetOrAddString("assemblyName"), 1);
-
-            return metadataBuilder.AddMethodDefinition(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, MethodImplAttributes.IL | MethodImplAttributes.Managed, metadataBuilder.GetOrAddString(".ctor"), metadataBuilder.GetOrAddBlob(signatureBuilder), mainBodyOffset, parameterList: MetadataTokens.ParameterHandle(2));
+            return metadataBuilder.AddMethodDefinition(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, MethodImplAttributes.IL | MethodImplAttributes.Managed, metadataBuilder.GetOrAddString(".ctor"), metadataBuilder.GetOrAddBlob(signatureBuilder), mainBodyOffset, parameterList: default);
         }
 
         private static MethodDefinitionHandle CreateIgnoresAccessChecksToAttributeGetAssemblyNameMethod(MetadataBuilder metadataBuilder, BlobBuilder codeBuilder, FieldDefinitionHandle assemblyNameField)
@@ -377,7 +374,7 @@ namespace Microsoft.BPerf.BuildTools
                 {
                 });
 
-            return metadataBuilder.AddMethodDefinition(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName, MethodImplAttributes.IL | MethodImplAttributes.Managed, metadataBuilder.GetOrAddString("get_AssemblyName"), metadataBuilder.GetOrAddBlob(signatureBuilder), bodyOffset, parameterList: MetadataTokens.ParameterHandle(2));
+            return metadataBuilder.AddMethodDefinition(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName, MethodImplAttributes.IL | MethodImplAttributes.Managed, metadataBuilder.GetOrAddString("get_AssemblyName"), metadataBuilder.GetOrAddBlob(signatureBuilder), bodyOffset, parameterList: default);
         }
 
         private static void WritePEImage(Stream peStream, MetadataBuilder metadataBuilder, BlobBuilder ilBuilder, Blob mvidFixup = default)
