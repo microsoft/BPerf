@@ -2,6 +2,7 @@
 
 #ifndef _WINDOWS
 
+#define _alloca alloca
 #define PAL_STDCPP_COMPAT
 #define UNICODE
 #define FEATURE_PAL

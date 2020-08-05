@@ -178,8 +178,8 @@ public:
     size_t GetNumberOfFrozenSegments() const;
 
     /* Control APIs */
-    bool EnableObjectAllocationMonitoring();
-    bool DisableObjectAllocationMonitoring();
+    bool EnableObjectAllocationMonitoring() const;
+    bool DisableObjectAllocationMonitoring() const;
 
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override
     {
