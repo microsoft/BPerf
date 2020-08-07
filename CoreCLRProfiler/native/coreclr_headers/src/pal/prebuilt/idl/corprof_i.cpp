@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 
 
@@ -14,14 +13,14 @@
 
 #pragma warning( disable: 4049 )  /* more than 64k source lines */
 
-#define EXTERN_C extern "C"
-
 
 #ifdef __cplusplus
 extern "C"{
-#endif 
+#endif
 
 
+#include <rpc.h>
+#include <rpcndr.h>
 
 #ifdef _MIDL_USE_GUIDDEF_
 
@@ -57,7 +56,7 @@ typedef IID CLSID;
 #endif // CLSID_DEFINED
 
 #define MIDL_DEFINE_GUID(type,name,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8) \
-        EXTERN_C const type name = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
+        EXTERN_C __declspec(selectany) const type name = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
 
 #endif // !_MIDL_USE_GUIDDEF_
 
@@ -86,6 +85,9 @@ MIDL_DEFINE_GUID(IID, IID_ICorProfilerCallback8,0x5BED9B15,0xC079,0x4D47,0xBF,0x
 
 
 MIDL_DEFINE_GUID(IID, IID_ICorProfilerCallback9,0x27583EC3,0xC8F5,0x482F,0x80,0x52,0x19,0x4B,0x8C,0xE4,0x70,0x5A);
+
+
+MIDL_DEFINE_GUID(IID, IID_ICorProfilerCallback10,0xCEC5B60E,0xC69C,0x495F,0x87,0xF6,0x84,0xD2,0x8E,0xE1,0x6F,0xFB);
 
 
 MIDL_DEFINE_GUID(IID, IID_ICorProfilerInfo,0x28B5557D,0x3F3F,0x48b4,0x90,0xB2,0x5F,0x9E,0xEA,0x2F,0x6C,0x48);

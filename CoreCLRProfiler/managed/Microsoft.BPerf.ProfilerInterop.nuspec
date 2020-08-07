@@ -12,8 +12,11 @@
   </metadata>
   <files>
     <file src="Microsoft.BPerf.ProfilerInterop.dll" target="lib/netstandard2.0" />
-    <file src="LinuxArtifacts/libMicrosoft.BPerf.CoreCLRProfiler.so" target="runtimes/linux-x64/native/libMicrosoft.BPerf.CoreCLRProfiler.so" />
-    <file src="WindowsArtifacts/Microsoft.BPerf.CoreCLRProfiler.dll" target="runtimes/win-x64/native/Microsoft.BPerf.CoreCLRProfiler.dll" />
-    <file src="WindowsArtifacts/Microsoft.BPerf.CoreCLRProfiler.pdb" target="runtimes/win-x64/native/Microsoft.BPerf.CoreCLRProfiler.pdb" />
+    <file src="LinuxArtifactsX64/libMicrosoft.BPerf.CoreCLRProfiler.so" target="runtimes/linux-x64/native/libMicrosoft.BPerf.CoreCLRProfiler.so" />
+    <file src="LinuxArtifactsARM64/libMicrosoft.BPerf.CoreCLRProfiler.so" target="runtimes/linux-arm64/native/libMicrosoft.BPerf.CoreCLRProfiler.so" />
+    <file src="WindowsArtifactsX64/Microsoft.BPerf.CoreCLRProfiler.dll" target="runtimes/win-x64/native/Microsoft.BPerf.CoreCLRProfiler.dll" />
+    <file src="WindowsArtifactsX64/Microsoft.BPerf.CoreCLRProfiler.pdb" target="runtimes/win-x64/native/Microsoft.BPerf.CoreCLRProfiler.pdb" />
+    <file src="WindowsArtifactsARM64/Microsoft.BPerf.CoreCLRProfiler.dll" target="runtimes/win-arm64/native/Microsoft.BPerf.CoreCLRProfiler.dll" />
+    <file src="WindowsArtifactsARM64/Microsoft.BPerf.CoreCLRProfiler.pdb" target="runtimes/win-arm64/native/Microsoft.BPerf.CoreCLRProfiler.pdb" />
   </files>
 </package>

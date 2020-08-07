@@ -11,7 +11,7 @@ pr:
   - dev
 
 jobs:
-  - job: windows_build
+  - job: windows_build_x64
 
     pool:
       name: Azure Pipelines
@@ -37,12 +37,40 @@ jobs:
         configuration: RelWithDebInfo
 
     - publish: $(Build.SourcesDirectory)/CoreCLRProfiler/native/RelWithDebInfo
-      artifact: WindowsArtifacts
+      artifact: WindowsArtifactsX64
 
-  - job: linux_build
+  - job: windows_build_arm64
 
     pool:
-      vmImage: 'ubuntu-18.04'
+      name: Azure Pipelines
+      vmImage: 'windows-latest'
+
+    steps:
+
+    - powershell: |
+       $sourceDir = "$(Build.SourcesDirectory)".Replace("\", "\\")
+       Set-Content -Path $(Build.SourcesDirectory)\sourcelink.json -Value "{ ""documents"": { ""$sourceDir\\*"": ""https://raw.githubusercontent.com/microsoft/BPerf/$(Build.SourceVersion)/*"" } }"
+      displayName: 'PowerShell Script'
+
+    - task: CMake@1
+      displayName: CMake
+      inputs:
+        cmakeArgs: '-G "Visual Studio 16 2019" -A arm64 $(Build.SourcesDirectory)/CoreCLRProfiler/native/CMakeLists.txt -DLINK_TYPE=Static -DSourceLinkJson=$(Build.SourcesDirectory)\sourcelink.json'
+
+    - task: MSBuild@1
+      displayName: 'Build solution CoreCLRProfiler\native\Microsoft.BPerf.CoreCLRProfiler.vcxproj'
+      inputs:
+        solution: 'CoreCLRProfiler\native\Microsoft.BPerf.CoreCLRProfiler.vcxproj'
+        platform: arm64
+        configuration: RelWithDebInfo
+
+    - publish: $(Build.SourcesDirectory)/CoreCLRProfiler/native/RelWithDebInfo
+      artifact: WindowsArtifactsARM64
+
+  - job: linux_build_x64
+
+    pool:
+      vmImage: 'ubuntu-latest'
 
     variables:
       imageName: 'bperflinux'
@@ -62,12 +90,13 @@ jobs:
       displayName: 'Build code'
 
     - publish: $(Build.SourcesDirectory)/CoreCLRProfiler/native
-      artifact: LinuxArtifacts
+      artifact: LinuxArtifactsX64
 
   - job: nugetpacking
     dependsOn:
-    - windows_build
-    - linux_build
+    - windows_build_x64
+    - windows_build_arm64
+    - linux_build_x64
 
     pool:
       vmImage: 'windows-latest'
@@ -75,10 +104,13 @@ jobs:
     steps:
 
     - download: current
-      artifact: LinuxArtifacts
+      artifact: LinuxArtifactsX64
 
     - download: current
-      artifact: WindowsArtifacts
+      artifact: WindowsArtifactsX64
+
+    - download: current
+      artifact: WindowsArtifactsARM64
 
     - task: CopyFiles@2
       displayName: 'Copy Files to: $(Pipeline.Workspace)'
