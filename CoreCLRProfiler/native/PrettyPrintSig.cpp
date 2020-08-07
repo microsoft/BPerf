@@ -25,6 +25,8 @@
 #define NumItems(s) (sizeof(s) / sizeof(s[0]))
 #endif
 
+const mdToken g_tkCorEncodeToken[4] ={mdtTypeDef, mdtTypeRef, mdtTypeSpec, mdtBaseType};
+
 //////////////////////////////////////////////////////////////////////////////
 // enum CorElementTypeZapSig defines some additional internal ELEMENT_TYPE's
 // values that are only used by ZapSig signatures.
