@@ -72,36 +72,49 @@ jobs:
     pool:
       vmImage: 'ubuntu-latest'
 
-    variables:
-      imageName: 'bperflinux'
-      imageTag: '$(build.buildId)'
-      fullImageName: '$(imageName):$(imageTag)'
-
     steps:
 
-    - task: CMake@1
-      displayName: CMake
-      inputs:
-        cmakeArgs: '$(Build.SourcesDirectory)/CoreCLRProfiler/native/CMakeLists.txt'
-
     - script: |
+        set -euxo pipefail
         cd $(Build.SourcesDirectory)/CoreCLRProfiler/native
-        make
+        docker run --rm --privileged multiarch/qemu-user-static:register --reset
+        docker run --rm -v $(pwd):/mnt multiarch/ubuntu-core:x86_64-focal bash -c 'cd /mnt && apt update && apt install -y g++ cmake make libssl-dev file && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo CMakeLists.txt && make'
       displayName: 'Build code'
 
     - publish: $(Build.SourcesDirectory)/CoreCLRProfiler/native
       artifact: LinuxArtifactsX64
+
+  - job: linux_build_arm64
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+
+    - script: |
+        set -euxo pipefail
+        cd $(Build.SourcesDirectory)/CoreCLRProfiler/native
+        docker run --rm --privileged multiarch/qemu-user-static:register --reset
+        docker run --rm -v $(pwd):/mnt multiarch/ubuntu-core:arm64-focal bash -c 'cd /mnt && apt update && apt install -y g++ cmake make libssl-dev file && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo CMakeLists.txt && make'
+      displayName: 'Build code'
+
+    - publish: $(Build.SourcesDirectory)/CoreCLRProfiler/native
+      artifact: LinuxArtifactsARM64
 
   - job: nugetpacking
     dependsOn:
     - windows_build_x64
     - windows_build_arm64
     - linux_build_x64
+    - linux_build_arm64
 
     pool:
       vmImage: 'windows-latest'
 
     steps:
+
+    - download: current
+      artifact: LinuxArtifactsARM64
 
     - download: current
       artifact: LinuxArtifactsX64
