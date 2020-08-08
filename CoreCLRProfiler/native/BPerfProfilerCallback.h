@@ -6,11 +6,19 @@
 #include "profiler_pal.h"
 
 #ifndef MIN
-#define MIN(a,b)            (((a) < (b)) ? (a) : (b))
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 
 #undef IfFailRet
-#define IfFailRet(EXPR) do { HRESULT hr = (EXPR); if(FAILED(hr)) { return (hr); } } while (0)
+#define IfFailRet(EXPR)      \
+    do                       \
+    {                        \
+        HRESULT hr = (EXPR); \
+        if (FAILED(hr))      \
+        {                    \
+            return (hr);     \
+        }                    \
+    } while (0)
 
 #include <cstddef>
 #include <cstdlib>
@@ -22,12 +30,12 @@
 #include "cor.h"
 #include "corprof.h"
 
-class BPerfProfilerCallback final : public ICorProfilerCallback9
+class BPerfProfilerCallback final : public ICorProfilerCallback10
 {
 public:
     BPerfProfilerCallback();
     virtual ~BPerfProfilerCallback();
-    HRESULT STDMETHODCALLTYPE Initialize(IUnknown* pICorProfilerInfoUnk) override;
+    HRESULT STDMETHODCALLTYPE Initialize(IUnknown *pICorProfilerInfoUnk) override;
     HRESULT STDMETHODCALLTYPE Shutdown() override;
     HRESULT STDMETHODCALLTYPE AppDomainCreationStarted(AppDomainID appDomainId) override;
     HRESULT STDMETHODCALLTYPE AppDomainCreationFinished(AppDomainID appDomainId, HRESULT hrStatus) override;
@@ -49,21 +57,21 @@ public:
     HRESULT STDMETHODCALLTYPE FunctionUnloadStarted(FunctionID functionId) override;
     HRESULT STDMETHODCALLTYPE JITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock) override;
     HRESULT STDMETHODCALLTYPE JITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock) override;
-    HRESULT STDMETHODCALLTYPE JITCachedFunctionSearchStarted(FunctionID functionId, BOOL* pbUseCachedFunction) override;
+    HRESULT STDMETHODCALLTYPE JITCachedFunctionSearchStarted(FunctionID functionId, BOOL *pbUseCachedFunction) override;
     HRESULT STDMETHODCALLTYPE JITCachedFunctionSearchFinished(FunctionID functionId, COR_PRF_JIT_CACHE result) override;
     HRESULT STDMETHODCALLTYPE JITFunctionPitched(FunctionID functionId) override;
-    HRESULT STDMETHODCALLTYPE JITInlining(FunctionID callerId, FunctionID calleeId, BOOL* pfShouldInline) override;
+    HRESULT STDMETHODCALLTYPE JITInlining(FunctionID callerId, FunctionID calleeId, BOOL *pfShouldInline) override;
     HRESULT STDMETHODCALLTYPE ThreadCreated(ThreadID threadId) override;
     HRESULT STDMETHODCALLTYPE ThreadDestroyed(ThreadID threadId) override;
     HRESULT STDMETHODCALLTYPE ThreadAssignedToOSThread(ThreadID managedThreadId, DWORD osThreadId) override;
     HRESULT STDMETHODCALLTYPE RemotingClientInvocationStarted() override;
-    HRESULT STDMETHODCALLTYPE RemotingClientSendingMessage(GUID* pCookie, BOOL fIsAsync) override;
-    HRESULT STDMETHODCALLTYPE RemotingClientReceivingReply(GUID* pCookie, BOOL fIsAsync) override;
+    HRESULT STDMETHODCALLTYPE RemotingClientSendingMessage(GUID *pCookie, BOOL fIsAsync) override;
+    HRESULT STDMETHODCALLTYPE RemotingClientReceivingReply(GUID *pCookie, BOOL fIsAsync) override;
     HRESULT STDMETHODCALLTYPE RemotingClientInvocationFinished() override;
-    HRESULT STDMETHODCALLTYPE RemotingServerReceivingMessage(GUID* pCookie, BOOL fIsAsync) override;
+    HRESULT STDMETHODCALLTYPE RemotingServerReceivingMessage(GUID *pCookie, BOOL fIsAsync) override;
     HRESULT STDMETHODCALLTYPE RemotingServerInvocationStarted() override;
     HRESULT STDMETHODCALLTYPE RemotingServerInvocationReturned() override;
-    HRESULT STDMETHODCALLTYPE RemotingServerSendingReply(GUID* pCookie, BOOL fIsAsync) override;
+    HRESULT STDMETHODCALLTYPE RemotingServerSendingReply(GUID *pCookie, BOOL fIsAsync) override;
     HRESULT STDMETHODCALLTYPE UnmanagedToManagedTransition(FunctionID functionId, COR_PRF_TRANSITION_REASON reason) override;
     HRESULT STDMETHODCALLTYPE ManagedToUnmanagedTransition(FunctionID functionId, COR_PRF_TRANSITION_REASON reason) override;
     HRESULT STDMETHODCALLTYPE RuntimeSuspendStarted(COR_PRF_SUSPEND_REASON suspendReason) override;
@@ -92,8 +100,8 @@ public:
     HRESULT STDMETHODCALLTYPE ExceptionUnwindFinallyLeave() override;
     HRESULT STDMETHODCALLTYPE ExceptionCatcherEnter(FunctionID functionId, ObjectID objectId) override;
     HRESULT STDMETHODCALLTYPE ExceptionCatcherLeave() override;
-    HRESULT STDMETHODCALLTYPE COMClassicVTableCreated(ClassID wrappedClassId, REFGUID implementedIID, void* pVTable, ULONG cSlots) override;
-    HRESULT STDMETHODCALLTYPE COMClassicVTableDestroyed(ClassID wrappedClassId, REFGUID implementedIID, void* pVTable) override;
+    HRESULT STDMETHODCALLTYPE COMClassicVTableCreated(ClassID wrappedClassId, REFGUID implementedIID, void *pVTable, ULONG cSlots) override;
+    HRESULT STDMETHODCALLTYPE COMClassicVTableDestroyed(ClassID wrappedClassId, REFGUID implementedIID, void *pVTable) override;
     HRESULT STDMETHODCALLTYPE ExceptionCLRCatcherFound() override;
     HRESULT STDMETHODCALLTYPE ExceptionCLRCatcherExecute() override;
     HRESULT STDMETHODCALLTYPE ThreadNameChanged(ThreadID threadId, ULONG cchName, WCHAR name[]) override;
@@ -104,21 +112,23 @@ public:
     HRESULT STDMETHODCALLTYPE RootReferences2(ULONG cRootRefs, ObjectID rootRefIds[], COR_PRF_GC_ROOT_KIND rootKinds[], COR_PRF_GC_ROOT_FLAGS rootFlags[], UINT_PTR rootIds[]) override;
     HRESULT STDMETHODCALLTYPE HandleCreated(GCHandleID handleId, ObjectID initialObjectId) override;
     HRESULT STDMETHODCALLTYPE HandleDestroyed(GCHandleID handleId) override;
-    HRESULT STDMETHODCALLTYPE InitializeForAttach(IUnknown* pCorProfilerInfoUnk, void* pvClientData, UINT cbClientData) override;
+    HRESULT STDMETHODCALLTYPE InitializeForAttach(IUnknown *pCorProfilerInfoUnk, void *pvClientData, UINT cbClientData) override;
     HRESULT STDMETHODCALLTYPE ProfilerAttachComplete() override;
     HRESULT STDMETHODCALLTYPE ProfilerDetachSucceeded() override;
     HRESULT STDMETHODCALLTYPE ReJITCompilationStarted(FunctionID functionId, ReJITID rejitId, BOOL fIsSafeToBlock) override;
-    HRESULT STDMETHODCALLTYPE GetReJITParameters(ModuleID moduleId, mdMethodDef methodId, ICorProfilerFunctionControl* pFunctionControl) override;
+    HRESULT STDMETHODCALLTYPE GetReJITParameters(ModuleID moduleId, mdMethodDef methodId, ICorProfilerFunctionControl *pFunctionControl) override;
     HRESULT STDMETHODCALLTYPE ReJITCompilationFinished(FunctionID functionId, ReJITID rejitId, HRESULT hrStatus, BOOL fIsSafeToBlock) override;
     HRESULT STDMETHODCALLTYPE ReJITError(ModuleID moduleId, mdMethodDef methodId, FunctionID functionId, HRESULT hrStatus) override;
     HRESULT STDMETHODCALLTYPE MovedReferences2(ULONG cMovedObjectIDRanges, ObjectID oldObjectIDRangeStart[], ObjectID newObjectIDRangeStart[], SIZE_T cObjectIDRangeLength[]) override;
     HRESULT STDMETHODCALLTYPE SurvivingReferences2(ULONG cSurvivingObjectIDRanges, ObjectID objectIDRangeStart[], SIZE_T cObjectIDRangeLength[]) override;
     HRESULT STDMETHODCALLTYPE ConditionalWeakTableElementReferences(ULONG cRootRefs, ObjectID keyRefIds[], ObjectID valueRefIds[], GCHandleID rootIds[]) override;
-    HRESULT STDMETHODCALLTYPE GetAssemblyReferences(const WCHAR* wszAssemblyPath, ICorProfilerAssemblyReferenceProvider* pAsmRefProvider) override;
+    HRESULT STDMETHODCALLTYPE GetAssemblyReferences(const WCHAR *wszAssemblyPath, ICorProfilerAssemblyReferenceProvider *pAsmRefProvider) override;
     HRESULT STDMETHODCALLTYPE ModuleInMemorySymbolsUpdated(ModuleID moduleId) override;
     HRESULT STDMETHODCALLTYPE DynamicMethodJITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock, LPCBYTE ilHeader, ULONG cbILHeader) override;
     HRESULT STDMETHODCALLTYPE DynamicMethodJITCompilationFinished(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock) override;
     HRESULT STDMETHODCALLTYPE DynamicMethodUnloaded(FunctionID functionId) override;
+    HRESULT STDMETHODCALLTYPE EventPipeEventDelivered(EVENTPIPE_PROVIDER provider, DWORD eventId, DWORD eventVersion, ULONG cbMetadataBlob, LPCBYTE metadataBlob, ULONG cbEventData, LPCBYTE eventData, LPCGUID pActivityId, LPCGUID pRelatedActivityId, ThreadID eventThread, ULONG numStackFrames, UINT_PTR stackFrames[]) override;
+    HRESULT STDMETHODCALLTYPE EventPipeProviderCreated(EVENTPIPE_PROVIDER provider) override;
 
     /* Exception Counters */
     size_t GetNumberOfExceptionsThrown() const;
@@ -181,9 +191,10 @@ public:
     bool EnableObjectAllocationMonitoring() const;
     bool DisableObjectAllocationMonitoring() const;
 
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override
     {
-        if (riid == __uuidof(ICorProfilerCallback9) ||
+        if (riid == __uuidof(ICorProfilerCallback10) ||
+            riid == __uuidof(ICorProfilerCallback9) ||
             riid == __uuidof(ICorProfilerCallback8) ||
             riid == __uuidof(ICorProfilerCallback7) ||
             riid == __uuidof(ICorProfilerCallback6) ||
@@ -221,9 +232,8 @@ public:
     }
 
 private:
-
     std::atomic<int> refCount;
-    ICorProfilerInfo11* corProfilerInfo;
+    ICorProfilerInfo12 *corProfilerInfo;
 
     /* Exception Counters */
     std::atomic<size_t> numberOfExceptionsThrown;
@@ -290,19 +300,19 @@ template <class TInterface>
 class CComPtr
 {
 private:
-    TInterface* pointer;
+    TInterface *pointer;
 
 public:
-    CComPtr(const CComPtr&) = delete;            // Copy constructor
-    CComPtr& operator=(const CComPtr&) = delete; // Copy assignment
-    CComPtr(CComPtr&&) = delete;                 // Move constructor
-    CComPtr& operator=(CComPtr&&) = delete;      // Move assignment
+    CComPtr(const CComPtr &) = delete;            // Copy constructor
+    CComPtr &operator=(const CComPtr &) = delete; // Copy assignment
+    CComPtr(CComPtr &&) = delete;                 // Move constructor
+    CComPtr &operator=(CComPtr &&) = delete;      // Move assignment
 
-    void* operator new(std::size_t) = delete;
-    void* operator new[](std::size_t) = delete;
+    void *operator new(std::size_t) = delete;
+    void *operator new[](std::size_t) = delete;
 
-    void operator delete(void* ptr) = delete;
-    void operator delete[](void* ptr) = delete;
+    void operator delete(void *ptr) = delete;
+    void operator delete[](void *ptr) = delete;
 
     CComPtr()
     {
@@ -318,28 +328,28 @@ public:
         }
     }
 
-    operator TInterface* ()
+    operator TInterface *()
     {
         return this->pointer;
     }
 
-    operator TInterface* () const = delete;
+    operator TInterface *() const = delete;
 
-    TInterface& operator*() = delete;
+    TInterface &operator*() = delete;
 
-    TInterface& operator*() const = delete;
+    TInterface &operator*() const = delete;
 
-    TInterface** operator&()
+    TInterface **operator&()
     {
         return &this->pointer;
     }
 
-    TInterface** operator&() const = delete;
+    TInterface **operator&() const = delete;
 
-    TInterface* operator->()
+    TInterface *operator->()
     {
         return this->pointer;
     }
 
-    TInterface* operator->() const = delete;
+    TInterface *operator->() const = delete;
 };

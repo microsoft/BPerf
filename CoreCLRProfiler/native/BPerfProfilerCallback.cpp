@@ -74,9 +74,9 @@ BPerfProfilerCallback::BPerfProfilerCallback()
 
 BPerfProfilerCallback::~BPerfProfilerCallback() = default;
 
-HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Initialize(IUnknown* pICorProfilerInfoUnk)
+HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Initialize(IUnknown *pICorProfilerInfoUnk)
 {
-    const HRESULT queryInterfaceResult = pICorProfilerInfoUnk->QueryInterface(__uuidof(ICorProfilerInfo11), reinterpret_cast<void**>(&this->corProfilerInfo));
+    const HRESULT queryInterfaceResult = pICorProfilerInfoUnk->QueryInterface(__uuidof(ICorProfilerInfo12), reinterpret_cast<void **>(&this->corProfilerInfo));
 
     if (FAILED(queryInterfaceResult))
     {
@@ -95,9 +95,10 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Initialize(IUnknown* pICorProfi
 
     const DWORD eventsHigh = COR_PRF_HIGH_MONITOR_LARGEOBJECT_ALLOCATED    |
                              COR_PRF_HIGH_MONITOR_DYNAMIC_FUNCTION_UNLOADS |
-                             COR_PRF_HIGH_BASIC_GC                         ;
+                             COR_PRF_HIGH_BASIC_GC                         |
+                             COR_PRF_HIGH_MONITOR_EVENT_PIPE               ;
 
-    const char* monitorObjectAllocated = std::getenv("BPERF_MONITOR_OBJECT_ALLOCATED");
+    const char *monitorObjectAllocated = std::getenv("BPERF_MONITOR_OBJECT_ALLOCATED");
     if (monitorObjectAllocated != nullptr && std::string(monitorObjectAllocated) == std::string("1"))
     {
         eventsMask |= COR_PRF_MONITOR_OBJECT_ALLOCATED;
@@ -116,7 +117,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::Shutdown()
     UnregisterFromETW();
 #endif
 
-    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+    ICorProfilerInfo12 *tmp = this->corProfilerInfo;
 
     if (tmp != nullptr)
     {
@@ -254,7 +255,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITCompilationFinished(Function
     ModuleID moduleId;
     mdToken token;
 
-    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+    ICorProfilerInfo12 *tmp = this->corProfilerInfo;
     IfFailRet(tmp->GetFunctionInfo(functionId, nullptr, &moduleId, &token));
 
     ULONG cbMethodSize;
@@ -278,7 +279,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITCompilationFinished(Function
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITCachedFunctionSearchStarted(FunctionID functionId, BOOL* pbUseCachedFunction)
+HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITCachedFunctionSearchStarted(FunctionID functionId, BOOL *pbUseCachedFunction)
 {
     ++this->totalCachedMethodsSearched;
 
@@ -287,7 +288,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITCachedFunctionSearchStarted(
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITCachedFunctionSearchFinished(FunctionID functionId, COR_PRF_JIT_CACHE result)
 {
-    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+    ICorProfilerInfo12 *tmp = this->corProfilerInfo;
 
     // Bail out early, so you don't end up causing an SO if for whatever reason this->corProfilerInfo is null.
     // CoreCLR's filter wants to throw an AccessViolation exception, which is not yet restored, so it tries to restore that
@@ -308,7 +309,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITCachedFunctionSearchFinished
         IfFailRet(tmp->GetCodeInfo2(functionId, cCodeInfos, &cCodeInfos, codeInfos.data()));
 
         size_t codeSize = 0;
-        for (auto& s : codeInfos)
+        for (auto &s : codeInfos)
         {
             codeSize += s.size;
         }
@@ -324,7 +325,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITFunctionPitched(FunctionID f
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITInlining(FunctionID callerId, FunctionID calleeId, BOOL* pfShouldInline)
+HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITInlining(FunctionID callerId, FunctionID calleeId, BOOL *pfShouldInline)
 {
     return S_OK;
 }
@@ -351,12 +352,12 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::RemotingClientInvocationStarted
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::RemotingClientSendingMessage(GUID* pCookie, BOOL fIsAsync)
+HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::RemotingClientSendingMessage(GUID *pCookie, BOOL fIsAsync)
 {
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::RemotingClientReceivingReply(GUID* pCookie, BOOL fIsAsync)
+HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::RemotingClientReceivingReply(GUID *pCookie, BOOL fIsAsync)
 {
     return S_OK;
 }
@@ -366,7 +367,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::RemotingClientInvocationFinishe
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::RemotingServerReceivingMessage(GUID* pCookie, BOOL fIsAsync)
+HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::RemotingServerReceivingMessage(GUID *pCookie, BOOL fIsAsync)
 {
     return S_OK;
 }
@@ -381,7 +382,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::RemotingServerInvocationReturne
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::RemotingServerSendingReply(GUID* pCookie, BOOL fIsAsync)
+HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::RemotingServerSendingReply(GUID *pCookie, BOOL fIsAsync)
 {
     return S_OK;
 }
@@ -400,7 +401,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::RuntimeSuspendStarted(COR_PRF_S
 {
     ++this->totalNumberOfRuntimeSuspensions;
 
-    switch(suspendReason)
+    switch (suspendReason)
     {
     case COR_PRF_SUSPEND_FOR_GC:
         ++this->totalNumberOfRuntimeSuspensionsForGC;
@@ -453,10 +454,10 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::MovedReferences(ULONG cMovedObj
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::ObjectAllocated(ObjectID objectId, ClassID classId)
 {
 #ifdef _WINDOWS
-    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+    ICorProfilerInfo12 *tmp = this->corProfilerInfo;
     ModuleID moduleId;
     mdTypeDef typeDef;
-    size_t size;
+    SIZE_T size;
 
     IfFailRet(tmp->GetClassIDInfo2(classId, &moduleId, &typeDef, nullptr, 0, nullptr, nullptr));
     IfFailRet(tmp->GetObjectSize2(objectId, &size));
@@ -553,12 +554,12 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::ExceptionCatcherLeave()
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::COMClassicVTableCreated(ClassID wrappedClassId, REFGUID implementedIID, void* pVTable, ULONG cSlots)
+HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::COMClassicVTableCreated(ClassID wrappedClassId, REFGUID implementedIID, void *pVTable, ULONG cSlots)
 {
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::COMClassicVTableDestroyed(ClassID wrappedClassId, REFGUID implementedIID, void* pVTable)
+HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::COMClassicVTableDestroyed(ClassID wrappedClassId, REFGUID implementedIID, void *pVTable)
 {
     return S_OK;
 }
@@ -608,13 +609,13 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::GarbageCollectionStarted(int cG
 
     ULONG cObjectRanges = 0;
 
-    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+    ICorProfilerInfo12 *tmp = this->corProfilerInfo;
     IfFailRet(tmp->GetGenerationBounds(0, &cObjectRanges, nullptr));
     std::vector<COR_PRF_GC_GENERATION_RANGE> objectRanges(cObjectRanges);
     IfFailRet(tmp->GetGenerationBounds(cObjectRanges, &cObjectRanges, objectRanges.data()));
 
     size_t sum = 0;
-    for (auto& s : objectRanges)
+    for (auto &s : objectRanges)
     {
         sum += s.rangeLength;
     }
@@ -631,12 +632,12 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::SurvivingReferences(ULONG cSurv
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::GarbageCollectionFinished()
 {
-    size_t generationSizes[5] = { 0, 0, 0, 0, 0 };
+    size_t generationSizes[5] = {0, 0, 0, 0, 0};
     size_t frozenSegmentsSize = 0;
 
     ULONG cObjectRanges = 0;
 
-    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+    ICorProfilerInfo12 *tmp = this->corProfilerInfo;
     IfFailRet(tmp->GetGenerationBounds(0, &cObjectRanges, nullptr));
     std::vector<COR_PRF_GC_GENERATION_RANGE> objectRanges(cObjectRanges);
     IfFailRet(tmp->GetGenerationBounds(cObjectRanges, &cObjectRanges, objectRanges.data()));
@@ -693,7 +694,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::HandleDestroyed(GCHandleID hand
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::InitializeForAttach(IUnknown* pCorProfilerInfoUnk, void* pvClientData, UINT cbClientData)
+HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::InitializeForAttach(IUnknown *pCorProfilerInfoUnk, void *pvClientData, UINT cbClientData)
 {
     return S_OK;
 }
@@ -713,7 +714,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::ReJITCompilationStarted(Functio
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::GetReJITParameters(ModuleID moduleId, mdMethodDef methodId, ICorProfilerFunctionControl* pFunctionControl)
+HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::GetReJITParameters(ModuleID moduleId, mdMethodDef methodId, ICorProfilerFunctionControl *pFunctionControl)
 {
     return S_OK;
 }
@@ -743,7 +744,7 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::ConditionalWeakTableElementRefe
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::GetAssemblyReferences(const WCHAR* wszAssemblyPath, ICorProfilerAssemblyReferenceProvider* pAsmRefProvider)
+HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::GetAssemblyReferences(const WCHAR *wszAssemblyPath, ICorProfilerAssemblyReferenceProvider *pAsmRefProvider)
 {
     return S_OK;
 }
@@ -767,13 +768,13 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::DynamicMethodJITCompilationFini
 {
     ULONG32 cCodeInfos;
 
-    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+    ICorProfilerInfo12 *tmp = this->corProfilerInfo;
     IfFailRet(tmp->GetCodeInfo2(functionId, 0, &cCodeInfos, nullptr));
     std::vector<COR_PRF_CODE_INFO> codeInfos(cCodeInfos);
     IfFailRet(tmp->GetCodeInfo2(functionId, cCodeInfos, &cCodeInfos, codeInfos.data()));
 
     size_t codeSize = 0;
-    for (auto& s : codeInfos)
+    for (auto &s : codeInfos)
     {
         codeSize += s.size;
     }
@@ -787,6 +788,16 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::DynamicMethodUnloaded(FunctionI
 {
     --this->currentNumberOfDynamicMethods;
 
+    return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::EventPipeEventDelivered(EVENTPIPE_PROVIDER provider, DWORD eventId, DWORD eventVersion, ULONG cbMetadataBlob, LPCBYTE metadataBlob, ULONG cbEventData, LPCBYTE eventData, LPCGUID pActivityId, LPCGUID pRelatedActivityId, ThreadID eventThread, ULONG numStackFrames, UINT_PTR stackFrames[])
+{
+    return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::EventPipeProviderCreated(EVENTPIPE_PROVIDER provider)
+{
     return S_OK;
 }
 
@@ -997,7 +1008,7 @@ bool BPerfProfilerCallback::EnableObjectAllocationMonitoring() const
 {
     DWORD eventsLow, eventsHigh;
 
-    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+    ICorProfilerInfo12 *tmp = this->corProfilerInfo;
     tmp->GetEventMask2(&eventsLow, &eventsHigh);
     eventsLow |= (COR_PRF_ENABLE_OBJECT_ALLOCATED);
     return tmp->SetEventMask2(eventsLow, eventsHigh) == S_OK;
@@ -1007,7 +1018,7 @@ bool BPerfProfilerCallback::DisableObjectAllocationMonitoring() const
 {
     DWORD eventsLow, eventsHigh;
 
-    ICorProfilerInfo11* tmp = this->corProfilerInfo;
+    ICorProfilerInfo12 *tmp = this->corProfilerInfo;
     tmp->GetEventMask2(&eventsLow, &eventsHigh);
     eventsLow &= ~(COR_PRF_ENABLE_OBJECT_ALLOCATED);
     return tmp->SetEventMask2(eventsLow, eventsHigh) == S_OK;
