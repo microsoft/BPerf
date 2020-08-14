@@ -70,6 +70,8 @@ BPerfProfilerCallback::BPerfProfilerCallback()
 
     this->numberOfGCSegments = 0;
     this->numberOfFrozenSegments = 0;
+
+    this->reportOutOfBandMessage = portable_wide_string(W("ReportOutOfBandMessage"));
 }
 
 BPerfProfilerCallback::~BPerfProfilerCallback() = default;
@@ -282,6 +284,45 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITCompilationFinished(Function
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::JITCachedFunctionSearchStarted(FunctionID functionId, BOOL *pbUseCachedFunction)
 {
     ++this->totalCachedMethodsSearched;
+
+    // TODO: Remove when https://github.com/dotnet/runtime/issues/40799 is fixed
+
+    ClassID classId;
+    ModuleID moduleId;
+    mdToken methodToken;
+
+    IfFailRet(this->corProfilerInfo->GetFunctionInfo(functionId, &classId, &moduleId, &methodToken));
+
+    CComPtr<IMetaDataImport> metadataImport;
+    IfFailRet(this->corProfilerInfo->GetModuleMetaData(moduleId, ofRead | ofWrite, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&metadataImport)));
+
+    mdTypeDef typeDef;
+    ULONG methodNameLength = 0;
+    PCCOR_SIGNATURE sig;
+    ULONG sigLength;
+    IfFailRet(metadataImport->GetMethodProps(methodToken, &typeDef, nullptr, 0, &methodNameLength, nullptr, &sig, &sigLength, nullptr, nullptr));
+
+    if (methodNameLength > 0)
+    {
+        portable_wide_string methodName(methodNameLength, ZEROSTRING);
+        IfFailRet(metadataImport->GetMethodProps(methodToken, nullptr, &methodName[0], methodNameLength, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr));
+        methodName.resize(methodNameLength - 1);
+
+        if (methodName == this->reportOutOfBandMessage)
+        {
+            CComPtr<IMethodMalloc> methodMalloc;
+            IfFailRet(this->corProfilerInfo->GetILFunctionBodyAllocator(moduleId, &methodMalloc));
+
+            auto* methodBody = static_cast<PBYTE>(methodMalloc->Alloc(sizeof(IMAGE_COR_ILMETHOD_TINY) + 1));
+            PBYTE curr = methodBody;
+            *curr = static_cast<BYTE>(CorILMethod_TinyFormat | 1 << 2);
+            curr += sizeof(IMAGE_COR_ILMETHOD_TINY);
+            *curr = 0x2A; // ret
+
+            IfFailRet(this->corProfilerInfo->SetILFunctionBody(moduleId, methodToken, methodBody));
+            *pbUseCachedFunction = FALSE;
+        }
+    }
 
     return S_OK;
 }
