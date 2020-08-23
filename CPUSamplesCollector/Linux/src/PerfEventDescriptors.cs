@@ -4,6 +4,7 @@
 namespace BPerfCPUSamplesCollector
 {
     using System;
+    using System.Runtime.CompilerServices;
     using static NativeMethods;
 
     internal readonly ref struct PerfEventDescriptors
@@ -31,6 +32,12 @@ namespace BPerfCPUSamplesCollector
             {
                 CloseFileDescriptor(this.data[i]);
             }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public void KeepAlive()
+        {
+            // dummy method to silence intellisense warning
         }
     }
 }

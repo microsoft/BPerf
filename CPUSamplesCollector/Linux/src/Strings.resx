@@ -163,4 +163,7 @@
   <data name="StatXError" xml:space="preserve">
     <value>StatX System Call returned an error</value>
   </data>
+  <data name="UProbeType" xml:space="preserve">
+    <value>/sys/bus/event_source/devices/uprobe/type</value>
+  </data>
 </root>

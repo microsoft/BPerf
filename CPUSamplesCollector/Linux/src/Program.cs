@@ -52,7 +52,7 @@ namespace BPerfCPUSamplesCollector
 
             for (var i = 0; i < ringBuffers.Length; ++i)
             {
-                AssociateBPFMapWithRingBuffer(i, perfeventmap.FileDescriptor, in ringBuffers[i]);
+                AssociateBPFMapWithRingBuffer(perfeventmap.FileDescriptor, i, in ringBuffers[i]);
             }
 
             Span<int> dict = stackalloc int[7]; // TODO: FIXME Hard Coded number!
@@ -94,7 +94,7 @@ namespace BPerfCPUSamplesCollector
             {
                 Type = PerfEventType.PERF_TYPE_SOFTWARE,
                 Config = PerfTypeSpecificConfig.PERF_COUNT_SW_CPU_CLOCK,
-                Flags = PerfEventAttrFlags.Freq,
+                Flags = PerfEventAttrFlags.Freq | PerfEventAttrFlags.MMap | PerfEventAttrFlags.MMap2,
                 SampleFreq = 99,
             };
 
@@ -115,7 +115,7 @@ namespace BPerfCPUSamplesCollector
                 if (numberOfReadyFileDescriptors < 0)
                 {
                     ConsoleWriteLine(in Strings.EPollWaitFailed);
-                    return;
+                    break;
                 }
 
                 for (var i = 0; i < numberOfReadyFileDescriptors; ++i)
@@ -125,7 +125,7 @@ namespace BPerfCPUSamplesCollector
                 }
             }
 
-            perffds.Dispose();
+            perffds.KeepAlive();
         }
 
         private static unsafe void ProcessRingBuffer(IntPtr data, int length)
@@ -189,17 +189,22 @@ namespace BPerfCPUSamplesCollector
         // maybe bpf output needs to be revisited, it should be sample period 1 but watermark more
         private static int CreateUProbePerfEvent(int cpu, ulong probeOffsetInELFFile, ulong probePath)
         {
-            var attr = new PerfEventAttr
+            if (System.Buffers.Text.Utf8Parser.TryParse(new ReadOnlyLinuxFile(in Strings.UProbeType).Contents, out int dynamicPMU, out _))
             {
-                Type = (PerfEventType)10,
-                SamplePeriod = 1,
-                WakeupEvents = 1,
-                UProbePath = probePath,
-                ProbeOffset = probeOffsetInELFFile,
-                Size = Unsafe.SizeOf<PerfEventAttr>(),
-            };
+                var attr = new PerfEventAttr
+                {
+                    Type = (PerfEventType)dynamicPMU,
+                    SamplePeriod = 1,
+                    WakeupEvents = 1,
+                    UProbePath = probePath,
+                    ProbeOffset = probeOffsetInELFFile,
+                    Size = Unsafe.SizeOf<PerfEventAttr>(),
+                };
 
-            return PerfEventOpen(in attr, cpu);
+                return PerfEventOpen(in attr, cpu);
+            }
+
+            return -1;
         }
 
         private static bool AddEPollMonitor(int epfd, int index, in RingBuffer r)
@@ -233,7 +238,7 @@ namespace BPerfCPUSamplesCollector
             return epfd;
         }
 
-        private static bool AssociateBPFMapWithRingBuffer(int cpu, int mapfd, in RingBuffer r)
+        private static bool AssociateBPFMapWithRingBuffer(int mapfd, int cpu, in RingBuffer r)
         {
             if (BPFUpdateElem(mapfd, in cpu, in r.FileDescriptor) == -1)
             {
