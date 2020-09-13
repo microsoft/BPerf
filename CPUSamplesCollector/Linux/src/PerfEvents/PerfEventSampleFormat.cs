@@ -5,6 +5,7 @@ namespace BPerfCPUSamplesCollector
 {
     using System;
 
+    // perf_event_sample_format
     [Flags]
     internal enum PerfEventSampleFormat : ulong
     {
@@ -28,7 +29,8 @@ namespace BPerfCPUSamplesCollector
         PERF_SAMPLE_TRANSACTION = 1U << 17,
         PERF_SAMPLE_REGS_INTR = 1U << 18,
         PERF_SAMPLE_PHYS_ADDR = 1U << 19,
-        PERF_SAMPLE_AUX = 1U << 20,
-        PERF_SAMPLE_MAX = 1U << 21,
+        PERF_SAMPLE_AUX = 1U << 20, // 5.5
+        PERF_SAMPLE_CGROUP = 1U << 21, // 5.7
+        PERF_SAMPLE_MAX = 1U << 22, /* non-ABI */
     }
 }

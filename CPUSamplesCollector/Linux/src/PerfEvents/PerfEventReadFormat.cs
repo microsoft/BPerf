@@ -5,6 +5,7 @@ namespace BPerfCPUSamplesCollector
 {
     using System;
 
+    // perf_event_read_format
     [Flags]
     internal enum PerfEventReadFormat : ulong
     {

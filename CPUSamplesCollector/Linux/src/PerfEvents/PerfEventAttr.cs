@@ -5,6 +5,7 @@ namespace BPerfCPUSamplesCollector
 {
     using System.Runtime.InteropServices;
 
+    // perf_event_attr
     [StructLayout(LayoutKind.Explicit)]
     internal struct PerfEventAttr
     {
@@ -12,13 +13,13 @@ namespace BPerfCPUSamplesCollector
         /// Type of event
         /// </summary>
         [FieldOffset(0)]
-        public PerfEventType Type;
+        public PerfTypeId Type;
 
         /// <summary>
         /// Size of attribute structure
         /// </summary>
         [FieldOffset(4)]
-        public int Size;
+        public uint Size;
 
         /// <summary>
         /// Type-specific configuration.
@@ -87,7 +88,7 @@ namespace BPerfCPUSamplesCollector
         public ulong KProbeFunc;
 
         /// <summary>
-        /// for perf_uprobe
+        /// for perf_uprobe (added in 4.17)
         /// </summary>
         [FieldOffset(56)]
         public ulong UProbePath;
@@ -105,7 +106,7 @@ namespace BPerfCPUSamplesCollector
         public ulong BPLen;
 
         /// <summary>
-        /// with kprobe_func == NULL
+        /// with kprobe_func == NULL (added in 4.17)
         /// </summary>
         [FieldOffset(64)]
         public ulong KProbeAddr;

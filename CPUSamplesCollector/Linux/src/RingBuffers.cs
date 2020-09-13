@@ -10,17 +10,8 @@ namespace BPerfCPUSamplesCollector
     {
         private readonly ReadOnlySpan<RingBuffer> data;
 
-        public RingBuffers(Span<RingBuffer> space)
+        public RingBuffers(in PerfEventAttr attr, Span<RingBuffer> space)
         {
-            var attr = new PerfEventAttr
-            {
-                SampleType = PerfEventSampleFormat.PERF_SAMPLE_RAW,
-                Type = PerfEventType.PERF_TYPE_SOFTWARE,
-                Config = PerfTypeSpecificConfig.PERF_COUNT_SW_BPF_OUTPUT,
-                SamplePeriod = 1,
-                WakeupEvents = 1000,
-            };
-
             for (var i = 0; i < space.Length; ++i)
             {
                 var pmufd = PerfEventOpen(in attr, i);

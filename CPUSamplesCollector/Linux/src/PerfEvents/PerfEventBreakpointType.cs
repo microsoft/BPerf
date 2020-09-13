@@ -6,7 +6,7 @@ namespace BPerfCPUSamplesCollector
     using System;
 
     [Flags]
-    internal enum PerfEventBreakpointType
+    internal enum PerfEventBreakpointType : uint
     {
         HW_BREAKPOINT_EMPTY = 0,
         HW_BREAKPOINT_R = 1,

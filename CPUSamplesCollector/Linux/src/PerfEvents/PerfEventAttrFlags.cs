@@ -5,6 +5,7 @@ namespace BPerfCPUSamplesCollector
 {
     using System;
 
+    // perf_event_attr_flags
     [Flags]
     internal enum PerfEventAttrFlags : ulong
     {
@@ -47,7 +48,9 @@ namespace BPerfCPUSamplesCollector
         ContextSwitch = 1 << 26,            /* context switch data */
         WriteBackward = 1 << 27,            /* Write ring buffer from end to beginning */
         Namespaces = 1 << 28,               /* include namespaces data */
-        KSymbol = 1 << 29,                  /* context switch data */
-        BPF_Event = 1 << 30,                /* include bpf events */
+        KSymbol = 1 << 29, // 5.1           /* context switch data */
+        BPFEvent = 1 << 30, // 5.1          /* include bpf events */
+        AUXOutput = 1UL << 31, // 5.4       /* generate AUX records instead of events */
+        CGroup = 1UL << 32, // 5.7          /* include cgroup events */
     }
 }

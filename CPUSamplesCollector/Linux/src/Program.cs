@@ -48,7 +48,15 @@ namespace BPerfCPUSamplesCollector
                 return;
             }
 
-            using var ringBuffers = new RingBuffers(stackalloc RingBuffer[GetNumberOfConfiguredPrcoessors()]);
+            using var ringBuffers = new RingBuffers(
+                new PerfEventAttr
+                {
+                    SampleType = PerfEventSampleFormat.PERF_SAMPLE_RAW,
+                    Type = PerfTypeId.PERF_TYPE_SOFTWARE,
+                    Config = PerfTypeSpecificConfig.PERF_COUNT_SW_BPF_OUTPUT,
+                    SamplePeriod = 1,
+                    WakeupEvents = 1000,
+                }, stackalloc RingBuffer[GetNumberOfConfiguredPrcoessors()]);
 
             for (var i = 0; i < ringBuffers.Length; ++i)
             {
@@ -92,7 +100,7 @@ namespace BPerfCPUSamplesCollector
 
             var attr = new PerfEventAttr
             {
-                Type = PerfEventType.PERF_TYPE_SOFTWARE,
+                Type = PerfTypeId.PERF_TYPE_SOFTWARE,
                 Config = PerfTypeSpecificConfig.PERF_COUNT_SW_CPU_CLOCK,
                 Flags = PerfEventAttrFlags.Freq | PerfEventAttrFlags.MMap | PerfEventAttrFlags.MMap2,
                 SampleFreq = 99,
@@ -120,7 +128,7 @@ namespace BPerfCPUSamplesCollector
 
                 for (var i = 0; i < numberOfReadyFileDescriptors; ++i)
                 {
-                    IntPtr ptr = ringBuffers[events[i].Index].Address;
+                    var ptr = ringBuffers[events[i].Index].Address;
                     ProcessRingBuffer(ptr, 4096);
                 }
             }
@@ -130,9 +138,9 @@ namespace BPerfCPUSamplesCollector
 
         private static unsafe void ProcessRingBuffer(IntPtr data, int length)
         {
-            byte* copyMem = stackalloc byte[64 * 1024];
+            var copyMem = stackalloc byte[64 * 1024];
 
-            ref PerfEventMMapPage mmapPage = ref MemoryMarshal.AsRef<PerfEventMMapPage>(new Span<byte>((void*)data, length));
+            ref var mmapPage = ref MemoryMarshal.AsRef<PerfEventMMapPage>(new Span<byte>((void*)data, length));
 
             var dataHead = Volatile.Read(ref mmapPage.DataHead);
 
@@ -164,7 +172,7 @@ namespace BPerfCPUSamplesCollector
 
                 ProcessPerfRecord(eventHeader);
 
-                dataTail += eventHeaderSize;
+                dataTail += (ulong)eventHeaderSize;
             }
 
             Volatile.Write(ref mmapPage.DataTail, dataTail);
@@ -178,7 +186,7 @@ namespace BPerfCPUSamplesCollector
 
             ptr += sizeof(int);
 
-            ref readonly BPerfEvent bperfevent = ref MemoryMarshal.AsRef<BPerfEvent>(new ReadOnlySpan<byte>(ptr, rawSize));
+            ref readonly var bperfevent = ref MemoryMarshal.AsRef<BPerfEvent>(new ReadOnlySpan<byte>(ptr, rawSize));
 
             Console.WriteLine($"Type: {data->Type}, Size: {data->Size}, Misc: {data->Misc}, Raw Size: {rawSize}");
             Console.WriteLine(bperfevent);
@@ -187,18 +195,18 @@ namespace BPerfCPUSamplesCollector
         // uprobe, tracepoint, bpf output set wakeup=1, sample_period=1
         // makese sense because we want all uprobes tracepoint and bpf outputs to wake up
         // maybe bpf output needs to be revisited, it should be sample period 1 but watermark more
-        private static int CreateUProbePerfEvent(int cpu, ulong probeOffsetInELFFile, ulong probePath)
+        private static int CreateUProbePerfEvent(int cpu, ulong probeOffsetInElfFile, ulong probePath)
         {
             if (System.Buffers.Text.Utf8Parser.TryParse(new ReadOnlyLinuxFile(in Strings.UProbeType).Contents, out int dynamicPMU, out _))
             {
                 var attr = new PerfEventAttr
                 {
-                    Type = (PerfEventType)dynamicPMU,
+                    Type = (PerfTypeId)dynamicPMU,
                     SamplePeriod = 1,
                     WakeupEvents = 1,
                     UProbePath = probePath,
-                    ProbeOffset = probeOffsetInELFFile,
-                    Size = Unsafe.SizeOf<PerfEventAttr>(),
+                    ProbeOffset = probeOffsetInElfFile,
+                    Size = (uint)Unsafe.SizeOf<PerfEventAttr>(),
                 };
 
                 return PerfEventOpen(in attr, cpu);
@@ -260,6 +268,30 @@ namespace BPerfCPUSamplesCollector
             // talks about ksyms
             // loads perf_event_mmap_header
             // bpf_perf_event_print
+
+            /*
+             * // DebugFS is the filesystem type for debugfs.
+DebugFS = "debugfs"
+
+// TraceFS is the filesystem type for tracefs.
+TraceFS = "tracefs"
+
+// ProcMounts is the mount point for file systems in procfs.
+ProcMounts = "/proc/mounts"
+
+// PerfMaxStack is the mount point for the max perf event size.
+PerfMaxStack = "/proc/sys/kernel/perf_event_max_stack"
+
+// PerfMaxContexts is a sysfs mount that contains the max perf contexts.
+PerfMaxContexts = "/proc/sys/kernel/perf_event_max_contexts_per_stack"
+
+// SyscallsDir is a constant of the default tracing event syscalls directory.
+SyscallsDir = "/sys/kernel/debug/tracing/events/syscalls/"
+
+// TracingDir is a constant of the default tracing directory.
+TracingDir = "/sys/kernel/debug/tracing"
+
+             */
         }
     }
 }

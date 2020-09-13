@@ -27,10 +27,15 @@
     <Compile Include="BPF\BPFProgType.cs" />
     <Compile Include="BPF\BPFRegister.cs" />
     <Compile Include="BPF\BPFUpdateMapAttr.cs" />
+    <Compile Include="ELF64\ELFProgramHeader.cs" />
+    <Compile Include="ELF64\ELFSectionHeader.cs" />
+    <Compile Include="ELF64\ELFHeader.cs" />
+    <Compile Include="ELF64\ElfSectionFlags.cs" />
     <Compile Include="EPoll\EPollEvent.cs" />
     <Compile Include="EPoll\EPollFlags.cs" />
     <Compile Include="LinuxFileDescriptor.cs" />
     <Compile Include="PerfEventDescriptors.cs" />
+    <Compile Include="PerfEvents\PerfBranchSampleTypeShift.cs" />
     <Compile Include="ReadOnlyLinuxFile.cs" />
     <Compile Include="PerfEvents\ClockConstants.cs" />
     <Compile Include="PerfEvents\PerfBranchSampleType.cs" />
@@ -41,8 +46,8 @@
     <Compile Include="PerfEvents\PerfEventMMapPage.cs" />
     <Compile Include="PerfEvents\PerfEventReadFormat.cs" />
     <Compile Include="PerfEvents\PerfEventSampleFormat.cs" />
+    <Compile Include="PerfEvents\PerfTypeId.cs" />
     <Compile Include="PerfEvents\PerfEventType.cs" />
-    <Compile Include="PerfEvents\PerfRecordType.cs" />
     <Compile Include="PerfEvents\PerfTypeSpecificConfig.cs" />
     <Compile Include="RingBuffer.cs" />
     <Compile Include="RLimit\RLimit.cs" />

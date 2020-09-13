@@ -5,6 +5,7 @@ namespace BPerfCPUSamplesCollector
 {
     using System.Runtime.InteropServices;
 
+    // perf_event_mmap_page
     [StructLayout(LayoutKind.Sequential)]
     internal struct PerfEventMMapPage
     {
@@ -38,9 +39,9 @@ namespace BPerfCPUSamplesCollector
 
         public unsafe fixed byte Reserved[(118 * 8) + 4];
 
-        public long DataHead;
+        public ulong DataHead;
 
-        public long DataTail;
+        public ulong DataTail;
 
         public ulong DataOffset;
 

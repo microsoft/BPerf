@@ -5,11 +5,12 @@ namespace BPerfCPUSamplesCollector
 {
     using System.Runtime.InteropServices;
 
+    // perf_event_header
     [StructLayout(LayoutKind.Explicit)]
     internal struct PerfEventHeader
     {
         [FieldOffset(0)]
-        public PerfRecordType Type;
+        public PerfEventType Type;
 
         [FieldOffset(4)]
         public ushort Misc;

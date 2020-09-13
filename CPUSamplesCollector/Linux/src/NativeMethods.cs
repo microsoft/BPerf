@@ -25,6 +25,7 @@ namespace BPerfCPUSamplesCollector
         {
             var syscallNumber = RuntimeInformation.OSArchitecture switch
             {
+                Architecture.Arm => 364,
                 Architecture.Arm64 => 241,
                 Architecture.X64 => 298,
                 _ => throw new NotSupportedException()
