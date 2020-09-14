@@ -15,8 +15,6 @@ namespace BPerfCPUSamplesCollector
 
     internal struct ELFHeader
     {
-        public static ReadOnlySpan<byte> ElfMagic => new byte[] { 0x7F, (byte)'E', (byte)'L', (byte)'F', (byte)'\0' };
-
         public unsafe fixed char Identity[16]; /* ELF identification */
         public ELFHeaderType Type; // e_type; /* Object file type */
         public ushort Machine; // e_machine; /* Machine type */
@@ -31,5 +29,7 @@ namespace BPerfCPUSamplesCollector
         public ushort SectionHeaderEntrySize; // e_shentsize; /* Size of section header entry */
         public ushort SectionHeaderCount; // e_shnum; /* Number of section header entries */
         public ushort SectionHeaderStringIndex; // e_shstrndx; /* Section name string table index */
+
+        public static ReadOnlySpan<byte> ElfMagic => new byte[] { 0x7F, (byte)'E', (byte)'L', (byte)'F', (byte)'\0' };
     }
 }

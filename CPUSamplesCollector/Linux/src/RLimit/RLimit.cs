@@ -8,11 +8,11 @@ namespace BPerfCPUSamplesCollector
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct RLimit
     {
-        private readonly ulong current;
+        private readonly nuint current;
 
-        private readonly ulong maximum;
+        private readonly nuint maximum;
 
-        public RLimit(ulong cur, ulong max)
+        public RLimit(nuint cur, nuint max)
         {
             this.current = cur;
             this.maximum = max;

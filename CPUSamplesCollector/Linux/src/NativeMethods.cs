@@ -13,7 +13,7 @@ namespace BPerfCPUSamplesCollector
 
         private const int PERF_MAX_STACK_DEPTH = 127;
 
-        private const long PERF_EVENT_IOC_SET_BPF = 0x40042408;
+        private const nint PERF_EVENT_IOC_SET_BPF = 0x40042408;
 
         public static unsafe int BPFProgLoad(ReadOnlySpan<byte> instructions, ReadOnlySpan<byte> logBuf, in byte license)
         {
@@ -21,7 +21,7 @@ namespace BPerfCPUSamplesCollector
             return BPF(BPFCmd.BPF_PROG_LOAD, in attr);
         }
 
-        public static int PerfEventOpen(in PerfEventAttr attr, long cpu, long pid = -1)
+        public static int PerfEventOpen(in PerfEventAttr attr, nint cpu, nint pid = -1)
         {
             var syscallNumber = RuntimeInformation.OSArchitecture switch
             {
@@ -31,7 +31,7 @@ namespace BPerfCPUSamplesCollector
                 _ => throw new NotSupportedException()
             };
 
-            const long PERF_FLAG_FD_CLOEXEC = 8;
+            const int PERF_FLAG_FD_CLOEXEC = 8;
             var fd = (int)SysCallPerfEventOpen(syscallNumber, in attr, pid, cpu, -1, PERF_FLAG_FD_CLOEXEC);
             if (fd == -1)
             {
@@ -53,7 +53,13 @@ namespace BPerfCPUSamplesCollector
 
         public static bool SetMaxResourceLimit()
         {
-            var r = new RLimit(ulong.MaxValue, ulong.MaxValue);
+            nuint maxValue;
+            unchecked
+            {
+                maxValue = IntPtr.Size == 8 ? (nuint)ulong.MaxValue : (nuint)uint.MaxValue;
+            }
+
+            var r = new RLimit(maxValue, maxValue);
 
             const int RLIMIT_MEMLOCK = 8;
             if (SetResourceLimit(RLIMIT_MEMLOCK, in r) != 0)
@@ -70,21 +76,21 @@ namespace BPerfCPUSamplesCollector
             return BPF(BPFCmd.BPF_OBJ_PIN, in attr);
         }
 
-        public static int BPFCreatePerCPUArray(int valueSize, int maxEntries)
+        public static int BPFCreatePerCPUArray(uint valueSize, uint maxEntries)
         {
             var attr = new BPFCreateMapAttr((int)BPFMapType.BPF_MAP_TYPE_PERCPU_ARRAY, sizeof(int), valueSize, maxEntries, 0);
             return BPF(BPFCmd.BPF_MAP_CREATE, in attr);
         }
 
-        public static int BPFCreateStackTraceMap(int maxEntries)
+        public static int BPFCreateStackTraceMap(uint maxEntries)
         {
-            var attr = new BPFCreateMapAttr((int)BPFMapType.BPF_MAP_TYPE_STACK_TRACE, sizeof(int), PERF_MAX_STACK_DEPTH * IntPtr.Size /* this is the max value size possible */, maxEntries, 0);
+            var attr = new BPFCreateMapAttr((int)BPFMapType.BPF_MAP_TYPE_STACK_TRACE, sizeof(int), (uint)(PERF_MAX_STACK_DEPTH * IntPtr.Size) /* this is the max value size possible */, maxEntries, 0);
             return BPF(BPFCmd.BPF_MAP_CREATE, in attr);
         }
 
         public static int BPFCreatePerfEventArrayMap()
         {
-            var attr = new BPFCreateMapAttr((int)BPFMapType.BPF_MAP_TYPE_PERF_EVENT_ARRAY, sizeof(int), sizeof(int), GetNumberOfConfiguredPrcoessors(), 0);
+            var attr = new BPFCreateMapAttr((int)BPFMapType.BPF_MAP_TYPE_PERF_EVENT_ARRAY, sizeof(int), sizeof(int), (uint)GetNumberOfConfiguredPrcoessors(), 0);
             return BPF(BPFCmd.BPF_MAP_CREATE, in attr);
         }
 
@@ -116,7 +122,7 @@ namespace BPerfCPUSamplesCollector
             }
         }
 
-        public static int GetFileSize(in byte filename)
+        public static ulong GetFileSize(in byte filename)
         {
             StatX statx = default;
             var retVal = StatXSize(in statx, in filename);
@@ -126,7 +132,7 @@ namespace BPerfCPUSamplesCollector
                 return 0;
             }
 
-            return (int)statx.Size;
+            return statx.Size;
         }
 
         public static int CloseFileDescriptor(int fd)
@@ -138,7 +144,7 @@ namespace BPerfCPUSamplesCollector
         public static extern int GetNumberOfConfiguredPrcoessors();
 
         [DllImport("libc", EntryPoint = "getpagesize", SetLastError = true)]
-        public static extern int GetMemoryPageSize();
+        public static extern uint GetMemoryPageSize();
 
         [DllImport("libc", EntryPoint = "open", SetLastError = true)]
         public static extern int OpenFileDescriptor(in byte filepath, int flags);
@@ -153,16 +159,17 @@ namespace BPerfCPUSamplesCollector
         public static extern int EPollWait(int epfd, ref EPollEvent events, int maxevents, int timeout);
 
         [DllImport("libc", EntryPoint = "mmap", SetLastError = true)]
-        public static extern IntPtr MemoryMap(IntPtr addr, long length, int prot, int flags, int fd, long offset);
+        public static extern IntPtr MemoryMap(IntPtr addr, nuint length, int prot, int flags, int fd, nuint offset);
 
         [DllImport("libc", EntryPoint = "munmap", SetLastError = true)]
-        public static extern IntPtr MemoryUnmap(IntPtr addr, long length);
+        public static extern IntPtr MemoryUnmap(IntPtr addr, nuint length);
 
         private static int BPF<T>(BPFCmd cmd, in T attr)
             where T : unmanaged
         {
             var number = RuntimeInformation.OSArchitecture switch
             {
+                Architecture.Arm => 386,
                 Architecture.Arm64 => 280,
                 Architecture.X64 => 321,
                 _ => throw new NotSupportedException()
@@ -181,6 +188,7 @@ namespace BPerfCPUSamplesCollector
         {
             var number = RuntimeInformation.OSArchitecture switch
             {
+                Architecture.Arm => 364,
                 Architecture.Arm64 => 291,
                 Architecture.X64 => 332,
                 _ => throw new NotSupportedException()
@@ -194,7 +202,7 @@ namespace BPerfCPUSamplesCollector
         }
 
         [DllImport("libc", EntryPoint = "syscall", SetLastError = true)]
-        private static extern unsafe long SysCallBPF(long number, BPFCmd cmd, void* attr, long size);
+        private static extern unsafe long SysCallBPF(nint number, BPFCmd cmd, void* attr, nint size);
 
         /// <remarks>
         ///
@@ -206,13 +214,13 @@ namespace BPerfCPUSamplesCollector
         /// /proc/sys/kernel/perf_event_mlock_kb 516
         /// </remarks>
         [DllImport("libc", EntryPoint = "syscall", SetLastError = true)]
-        private static extern long SysCallPerfEventOpen(long number, in PerfEventAttr attr, long pid, long cpu, long groupfd, long flags);
+        private static extern long SysCallPerfEventOpen(nint number, in PerfEventAttr attr, nint pid, nint cpu, nint groupfd, nint flags);
 
         [DllImport("libc", EntryPoint = "syscall", SetLastError = true)]
-        private static extern long SysCallStatX(long number, long dfd, in byte filename, ulong flags, uint mask, in StatX statx);
+        private static extern long SysCallStatX(nint number, nint dfd, in byte filename, nint flags, nuint mask, in StatX statx);
 
         [DllImport("libc", EntryPoint = "ioctl", SetLastError = true)]
-        private static extern int IOControl(int fd, long value, long flags);
+        private static extern int IOControl(int fd, nint value, nint flags);
 
         [DllImport("libc", EntryPoint = "setrlimit", SetLastError = true)]
         private static extern int SetResourceLimit(int resource, in RLimit r);

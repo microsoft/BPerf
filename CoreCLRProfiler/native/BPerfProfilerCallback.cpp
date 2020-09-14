@@ -834,15 +834,11 @@ HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::DynamicMethodUnloaded(FunctionI
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::EventPipeEventDelivered(EVENTPIPE_PROVIDER provider, DWORD eventId, DWORD eventVersion, ULONG cbMetadataBlob, LPCBYTE metadataBlob, ULONG cbEventData, LPCBYTE eventData, LPCGUID pActivityId, LPCGUID pRelatedActivityId, ThreadID eventThread, ULONG numStackFrames, UINT_PTR stackFrames[])
 {
-    this->corProfilerInfo->Even
     return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE BPerfProfilerCallback::EventPipeProviderCreated(EVENTPIPE_PROVIDER provider)
 {
-    ULONG cchName;
-    this->corProfilerInfo->
-    IfFailRet(this->corProfilerInfo->EventPipeGetProviderInfo(provider, 0, &cchName, nullptr));
     return S_OK;
 }
 

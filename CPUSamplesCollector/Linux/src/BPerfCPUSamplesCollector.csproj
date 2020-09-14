@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <LangVersion>preview</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <CodeAnalysisRuleSet>..\default.ruleset</CodeAnalysisRuleSet>
@@ -65,6 +66,10 @@
     <None Update="stacks.ebpf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="3.8.0-2.final" />
   </ItemGroup>
 
   <Target Name="InvokeBuildTools" BeforeTargets="CoreCompile">

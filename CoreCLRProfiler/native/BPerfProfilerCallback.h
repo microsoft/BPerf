@@ -296,8 +296,6 @@ private:
     std::atomic<size_t> numberOfFrozenSegments;
 
     portable_wide_string reportOutOfBandMessage;
-
-    thread_local std::unordered_map<EVENTPIPE_PROVIDER, portable_wide_string> 
 };
 
 template <class TInterface>

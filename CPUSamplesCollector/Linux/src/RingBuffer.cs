@@ -9,11 +9,11 @@ namespace BPerfCPUSamplesCollector
     {
         public readonly IntPtr Address;
 
-        public readonly int Size;
+        public readonly uint Size;
 
         public readonly int FileDescriptor;
 
-        public RingBuffer(IntPtr address, int size, int fd)
+        public RingBuffer(IntPtr address, uint size, int fd)
         {
             this.Address = address;
             this.Size = size;

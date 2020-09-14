@@ -8,7 +8,7 @@ namespace BPerfCPUSamplesCollector
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct BPFObjAttr
     {
-        private readonly unsafe void* pathName;
+        private readonly ulong pathName;
 
         private readonly int fileDescriptor;
 
@@ -16,7 +16,7 @@ namespace BPerfCPUSamplesCollector
 
         public unsafe BPFObjAttr(void* pathName, int fd, int flags)
         {
-            this.pathName = pathName;
+            this.pathName = (ulong)pathName;
             this.fileDescriptor = fd;
             this.fileFlags = flags;
         }

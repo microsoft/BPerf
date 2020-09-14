@@ -5,22 +5,26 @@ namespace BPerfCPUSamplesCollector
 {
     using System.Runtime.InteropServices;
 
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Explicit)]
     internal readonly struct BPFUpdateMapAttr
     {
-        private readonly long mapFD;
+        [FieldOffset(0)]
+        private readonly int mapfd;
 
-        private readonly unsafe void* key;
+        [FieldOffset(8)]
+        private readonly ulong key;
 
-        private readonly unsafe void* value;
+        [FieldOffset(16)]
+        private readonly ulong value;
 
-        private readonly long flags;
+        [FieldOffset(24)]
+        private readonly ulong flags;
 
-        public unsafe BPFUpdateMapAttr(long mapFD, void* key, void* value, long flags)
+        public unsafe BPFUpdateMapAttr(int mapfd, void* key, void* value, ulong flags)
         {
-            this.mapFD = mapFD;
-            this.key = key;
-            this.value = value;
+            this.mapfd = mapfd;
+            this.key = (ulong)key;
+            this.value = (ulong)value;
             this.flags = flags;
         }
     }

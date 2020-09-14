@@ -12,7 +12,7 @@ namespace BPerfCPUSamplesCollector
     {
         private readonly IntPtr addr;
 
-        private readonly int size;
+        private readonly uint size;
 
         private readonly int fd;
 
@@ -21,7 +21,7 @@ namespace BPerfCPUSamplesCollector
             const int O_RDONLY = 0;
             this.fd = OpenFileDescriptor(in filename, O_RDONLY);
 
-            this.size = GetFileSize(in filename);
+            this.size = (uint)GetFileSize(in filename); // uint conversion so it plays nice with nuint
 
             const int MAP_PRIVATE = 2;
             const int PROT_READ = 1;
@@ -30,7 +30,7 @@ namespace BPerfCPUSamplesCollector
             this.addr = MemoryMap(IntPtr.Zero, this.size, PROT_READ | PROT_WRITE, MAP_PRIVATE, this.fd, 0);
         }
 
-        public unsafe Span<byte> Contents => new Span<byte>((void*)this.addr, this.size);
+        public unsafe Span<byte> Contents => new Span<byte>((void*)this.addr, (int)this.size); // int conversion because spans only support int.MaxValue
 
         public void Dispose()
         {

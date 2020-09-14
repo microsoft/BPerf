@@ -8,17 +8,17 @@ namespace BPerfCPUSamplesCollector
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct BPFCreateMapAttr
     {
-        private readonly int mapType;
+        private readonly uint mapType;
 
-        private readonly int keySize;
+        private readonly uint keySize;
 
-        private readonly int valueSize;
+        private readonly uint valueSize;
 
-        private readonly int maxEntries;
+        private readonly uint maxEntries;
 
-        private readonly int mapFlags;
+        private readonly uint mapFlags;
 
-        public BPFCreateMapAttr(int mapType, int keySize, int valueSize, int maxEntries, int mapFlags)
+        public BPFCreateMapAttr(uint mapType, uint keySize, uint valueSize, uint maxEntries, uint mapFlags)
         {
             this.mapType = mapType;
             this.keySize = keySize;

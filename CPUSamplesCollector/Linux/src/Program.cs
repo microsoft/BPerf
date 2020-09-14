@@ -11,7 +11,7 @@ namespace BPerfCPUSamplesCollector
 
     internal static class Program
     {
-        internal const int RingBufferSize = 64 * 1024;
+        internal const uint RingBufferSize = 64 * 1024;
 
         private const int EPERM = 1;
 
@@ -128,7 +128,7 @@ namespace BPerfCPUSamplesCollector
 
                 for (var i = 0; i < numberOfReadyFileDescriptors; ++i)
                 {
-                    var ptr = ringBuffers[events[i].Index].Address;
+                    IntPtr ptr = ringBuffers[events[i].Index].Address;
                     ProcessRingBuffer(ptr, 4096);
                 }
             }
@@ -138,9 +138,9 @@ namespace BPerfCPUSamplesCollector
 
         private static unsafe void ProcessRingBuffer(IntPtr data, int length)
         {
-            var copyMem = stackalloc byte[64 * 1024];
+            byte* copyMem = stackalloc byte[64 * 1024];
 
-            ref var mmapPage = ref MemoryMarshal.AsRef<PerfEventMMapPage>(new Span<byte>((void*)data, length));
+            ref PerfEventMMapPage mmapPage = ref MemoryMarshal.AsRef<PerfEventMMapPage>(new Span<byte>((void*)data, length));
 
             var dataHead = Volatile.Read(ref mmapPage.DataHead);
 
@@ -186,7 +186,7 @@ namespace BPerfCPUSamplesCollector
 
             ptr += sizeof(int);
 
-            ref readonly var bperfevent = ref MemoryMarshal.AsRef<BPerfEvent>(new ReadOnlySpan<byte>(ptr, rawSize));
+            ref readonly BPerfEvent bperfevent = ref MemoryMarshal.AsRef<BPerfEvent>(new ReadOnlySpan<byte>(ptr, rawSize));
 
             Console.WriteLine($"Type: {data->Type}, Size: {data->Size}, Misc: {data->Misc}, Raw Size: {rawSize}");
             Console.WriteLine(bperfevent);
