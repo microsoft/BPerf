@@ -294,8 +294,6 @@ private:
 
     std::atomic<size_t> numberOfGCSegments;
     std::atomic<size_t> numberOfFrozenSegments;
-
-    portable_wide_string reportOutOfBandMessage;
 };
 
 template <class TInterface>
