@@ -1,4 +1,5 @@
-﻿cmake_minimum_required (VERSION 3.10)
+﻿project(bperf)
+cmake_minimum_required (VERSION 3.10)
 include_directories(coreclr_headers/src/pal/prebuilt/inc)
 include_directories(coreclr_headers/src/inc)
 if(UNIX)

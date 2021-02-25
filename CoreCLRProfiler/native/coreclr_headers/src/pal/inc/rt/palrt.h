@@ -139,7 +139,7 @@ typedef enum tagEFaultRepRetVal
 #ifdef __cplusplus
 #ifndef __PLACEMENT_NEW_INLINE
 #define __PLACEMENT_NEW_INLINE
-inline void *__cdecl operator new(long unsigned int, void *_P)
+inline void *__cdecl operator new(size_t, void *_P)
 {
     return (_P);
 }
